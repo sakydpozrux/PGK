@@ -1,6 +1,9 @@
 # Build directories
 build-*
 
+# QtCreator project's user config file
+*.pro.user
+
 # Compiled Object files
 *.slo
 *.lo
