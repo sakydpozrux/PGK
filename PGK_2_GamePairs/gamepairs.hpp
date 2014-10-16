@@ -5,24 +5,34 @@
 #include "board.hpp"
 #include <list>
 
+
 class GamePairs
 {
 public:
-  GamePairs(std::list<Player> players, std::list<Card> cards);
+  // I assume that there is at least one player.
+  GamePairs(std::list<Player> players, std::list<Card> cards = frequentCards());
 
   void play();
 
   std::list<Player> players;
   Board board;
 
-  void addPlayer(Player player);
-  const unsigned int numberOfPlayers;
+  unsigned int round = 0;
 
-  unsigned int round = 1;
-
-  Player *nextPlayer();
+  Player *currentPlayer;
+  void nextPlayer();
 
   std::list<Card>& cards();
+  static std::list<Card> frequentCards();
+
+protected:
+  virtual void gameBegin();
+  bool enoughCardsForNextRound();
+  void nextRound();
+  virtual void showRound();
+  void tryTakeCards(Card& card1, Card& card2);
+  virtual void showScores();
+  virtual void gameEnd();
 };
 
 #endif // GAMEPAIRS_HPP

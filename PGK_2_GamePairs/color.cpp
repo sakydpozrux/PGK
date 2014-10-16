@@ -3,11 +3,15 @@
 Color::Color(double red, double green, double blue)
     : r(red), g(green), b(blue) {}
 
-Color::Color(const FrequentColor color)
+Color::Color(const Color& color)
+    : Color(color.r, color.g, color.b) {}
+
+Color::Color(const FrequentColor colorName)
+    : Color(frequentColors().at(colorName)) {}
+
+bool Color::isSameColorAs(const Color& color)
 {
-    r = frequentColors().at(color).r;
-    g = frequentColors().at(color).g;
-    b = frequentColors().at(color).b;
+    return r == color.r && g == color.g && b == color.b;
 }
 
 std::list<Color> Color::frequentColorsNames()

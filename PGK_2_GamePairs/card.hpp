@@ -8,6 +8,9 @@ class Card
 public:
     Card(const Card& card);
     Card(const Color& color);
+    Card(const FrequentColor colorName);
+
+    bool hasSameColorAs(const Card& card);
 
     Color color;
 };

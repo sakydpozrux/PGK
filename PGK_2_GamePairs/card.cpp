@@ -5,3 +5,11 @@ Card::Card(const Card& card)
 
 Card::Card(const Color& color)
     : color(color) {}
+
+Card::Card(const FrequentColor colorName)
+    : color(colorName) {}
+
+bool Card::hasSameColorAs(const Card& card)
+{
+    return color.isSameColorAs(card.color);
+}

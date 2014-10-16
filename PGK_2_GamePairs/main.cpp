@@ -3,10 +3,9 @@
 
 int main()
 {
-    std::list<Player> players = { Player() };
+    std::list<Player> players = { Player("Szymon"), Player() };
 
-    std::list<Card> cards;
-    GamePairs pairs(players, cards);
+    GamePairs pairs(players);
     pairs.play();
 
     return 0;

@@ -15,7 +15,10 @@ public:
     double r, g, b;
 
     Color(double red, double green, double blue);
-    Color(const FrequentColor color);
+    Color(const Color& color);
+    Color(const FrequentColor colorName);
+
+    bool isSameColorAs(const Color& color);
 
     static std::list<Color> frequentColorsNames();
     static std::map<FrequentColor, Color> frequentColors();
