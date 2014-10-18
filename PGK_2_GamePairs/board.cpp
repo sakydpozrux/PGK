@@ -2,33 +2,42 @@
 #include <algorithm>
 #include <vector>
 
-Board::Board(std::list<Card> cards, unsigned int horizontalSize, unsigned int verticalSize)
-    : horizontalSize(horizontalSize), verticalSize(verticalSize), cards(cards)
+Board::Board(std::vector<Card> cards, unsigned int horizontalSize, unsigned int verticalSize)
+    : horizontalSize(horizontalSize),
+      verticalSize(verticalSize),
+      cards(cards),
+      presentCardsCounter(cards.size())
 {
+    // TODO: uncomment board shuffling if visual card choosing is implemented
     shuffle();
+}
+
+bool Board::enoughCardsForNextRound()
+{
+    return presentCardsCounter >= 2;
+}
+
+void Board::decrementPresentCardsCounter()
+{
+    --presentCardsCounter;
 }
 
 void Board::shuffle()
 {
-    std::vector<Card> vectorCards(std::make_move_iterator(std::begin(cards)),
-                                  std::make_move_iterator(std::end(cards)));
-
-    std::random_shuffle(vectorCards.begin(), vectorCards.end());
-
-    cards = std::list<Card>(vectorCards.begin(), vectorCards.end());
+    std::random_shuffle(cards.begin(), cards.end());
 }
 
-std::list<std::list<Card> > Board::cardsInRows()
+std::vector<std::vector<Card> > Board::cardsInRows()
 {
-    std::list<std::list<Card> > rows;
-    std::list<Card> currentRow;
+    std::vector<std::vector<Card> > rows;
+    std::vector<Card> currentRow;
 
     unsigned int i = 1;
     for (const Card& card : cards)
     {
         currentRow.push_back(card);
 
-        if (i % horizontalSize == 0 && i == cards.size())
+        if (i % horizontalSize == 0)
         {
             rows.push_back(currentRow);
             currentRow.clear();

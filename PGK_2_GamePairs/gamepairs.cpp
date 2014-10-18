@@ -1,21 +1,22 @@
 #include "gamepairs.hpp"
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 
-GamePairs::GamePairs(std::list<Player> players, std::list<Card> cards)
+GamePairs::GamePairs(std::list<Player> players, std::vector<Card> cards)
     : players(players), board(cards) {}
 
 void GamePairs::play()
 {
     gameBegin();
 
-    while (enoughCardsForNextRound())
+    while (board.enoughCardsForNextRound())
     {
         nextRound();
         showRound();
 
-        tryTakeCards(cards().front(), cards().front());
-
+        tryTakeCards(letUserChooseCard(), letUserChooseCard()) ? showCurrentPlayerSuccess()
+                                                               : showCurrentPlayerFail();
     }
 
     showScores();
@@ -33,14 +34,14 @@ void GamePairs::nextPlayer()
     currentPlayer = &*it; // REVIEW: Better idea anybody?
 }
 
-std::list<Card>& GamePairs::cards()
+std::vector<Card>& GamePairs::cards()
 {
     return board.cards;
 }
 
-std::list<Card> GamePairs::frequentCards()
+std::vector<Card> GamePairs::frequentCards()
 {
-    const std::list<Card> frequentCards = {
+    const std::vector<Card> frequentCards = {
         Card(RED),    Card(RED),
         Card(YELLOW), Card(YELLOW),
         Card(GREEN),  Card(GREEN),
@@ -59,39 +60,84 @@ void GamePairs::gameBegin()
     std::cout << "Starting game" << std::endl;
 }
 
-inline bool GamePairs::enoughCardsForNextRound()
-{
-    return cards().size() >= 2;
-}
-
 inline void GamePairs::nextRound()
 {
     ++round;
     nextPlayer();
 }
 
-void GamePairs::tryTakeCards(Card& card1, Card& card2)
+bool GamePairs::tryTakeCards(Card& card1, Card& card2)
 {
-    if (!card1.hasSameColorAs(card2))
-    {
-        // TODO: virtual method
-        //*showCurrentPlayerFail();
-        return;
-    }
+    if (!card1.hasSameColorAs(card2) || card1.isSameCard(card2) || !card1.presentOnBoard || !card2.presentOnBoard) return false;
 
     currentPlayer->incrementScore();
-    std::cout << "Player " << currentPlayer->name << " correctly chosen two cards" << std::endl;
-    // WARN: In line below I assume that for each present color exactly 2 instances exist in cards().
-    //       If there is more of them it will remove all instances of the color. Not only selected two.
-    cards().remove_if([&] (Card& card)->bool { return card.hasSameColorAs(card1); });
 
-    // TODO: virtual method
-    //showurrentPlayerSuccess();
+    board.decrementPresentCardsCounter();
+    board.decrementPresentCardsCounter();
+
+    card1.presentOnBoard = card2.presentOnBoard = false;
+
+    return true;
+}
+
+Card& GamePairs::letUserChooseCard()
+{
+    std::cout << "Choose card: ";
+
+    unsigned int id;
+    std::cin >> id;
+
+    Card& card = *std::find_if(cards().begin(),
+                               cards().end(),
+                               [&](const Card card)->bool { return card.uniqueId == id; });
+    //Card& card = board.cardsInRows().at(y).at(x);
+    return card;
+}
+
+void GamePairs::showCurrentPlayerSuccess()
+{
+    std::stringstream stream;
+
+    stream << "Player " << currentPlayer->name;
+    stream << " successfuly chooses two identical cards." << std::endl;
+
+    std::cout << stream.str();
+}
+
+void GamePairs::showCurrentPlayerFail()
+{
+    std::stringstream stream;
+
+    stream << "Player " << currentPlayer->name;
+    stream << " fails at choosing identical cards." << std::endl;
+
+    std::cout << stream.str();
 }
 
 void GamePairs::showRound()
 {
     std::cout << "Round: " << round << "\t Turn: " << currentPlayer->name << " (" << currentPlayer->score << ")" << std::endl;
+
+    showBoard();
+}
+
+void GamePairs::showBoard()
+{
+    for (const std::vector<Card>& horizontalRow : board.cardsInRows())
+    {
+        for (const Card& card : horizontalRow)
+        {
+            if (card.presentOnBoard)
+            {
+                std::cout << "[" << card.uniqueId << "](" << card.color.r << "," << card.color.g << "," << card.color.b << "), ";
+            }
+            else
+            {
+                std::cout << "(NOTHING), ";
+            }
+        }
+        std::cout << std::endl;
+    }
 }
 
 void GamePairs::showScores()

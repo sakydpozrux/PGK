@@ -3,14 +3,14 @@
 
 #include "player.hpp"
 #include "board.hpp"
-#include <list>
+#include <vector>
 
 
 class GamePairs
 {
 public:
   // I assume that there is at least one player.
-  GamePairs(std::list<Player> players, std::list<Card> cards = frequentCards());
+  GamePairs(std::list<Player> players, std::vector<Card> cards = frequentCards());
 
   void play();
 
@@ -22,15 +22,18 @@ public:
   Player *currentPlayer;
   void nextPlayer();
 
-  std::list<Card>& cards();
-  static std::list<Card> frequentCards();
+  std::vector<Card>& cards();
+  static std::vector<Card> frequentCards();
 
 protected:
   virtual void gameBegin();
-  bool enoughCardsForNextRound();
   void nextRound();
   virtual void showRound();
-  void tryTakeCards(Card& card1, Card& card2);
+  virtual void showBoard();
+  bool tryTakeCards(Card& card1, Card& card2);
+  virtual Card& letUserChooseCard();
+  virtual void showCurrentPlayerSuccess();
+  virtual void showCurrentPlayerFail();
   virtual void showScores();
   virtual void gameEnd();
 };

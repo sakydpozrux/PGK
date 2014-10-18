@@ -11,8 +11,13 @@ public:
     Card(const FrequentColor colorName);
 
     bool hasSameColorAs(const Card& card);
+    bool isSameCard(const Card& card);
 
     Color color;
+    unsigned int uniqueId;
+    bool presentOnBoard = true;
+
+    static unsigned int lastUniqueId;
 };
 
 #endif // CARD_HPP
