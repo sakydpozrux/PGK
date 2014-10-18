@@ -20,7 +20,6 @@ void GamePairs::play()
     }
 
     showScores();
-
     gameEnd();
 }
 
@@ -28,8 +27,7 @@ void GamePairs::nextPlayer()
 {
     static std::list<Player>::iterator it = players.end();
 
-    ++it;
-    if (it == players.end()) it = players.begin();
+    if (++it == players.end()) it = players.begin();
 
     currentPlayer = &*it; // REVIEW: Better idea anybody?
 }
@@ -41,7 +39,7 @@ std::vector<Card>& GamePairs::cards()
 
 std::vector<Card> GamePairs::frequentCards()
 {
-    const std::vector<Card> frequentCards = {
+    static const std::vector<Card> frequentCards = {
         Card(RED),    Card(RED),
         Card(YELLOW), Card(YELLOW),
         Card(GREEN),  Card(GREEN),
@@ -68,14 +66,14 @@ inline void GamePairs::nextRound()
 
 bool GamePairs::tryTakeCards(Card& card1, Card& card2)
 {
-    if (!card1.hasSameColorAs(card2) || card1.isSameCard(card2) || !card1.presentOnBoard || !card2.presentOnBoard) return false;
+    if (!validChoice(card1, card2))
+        return false;
 
     currentPlayer->incrementScore();
 
-    board.decrementPresentCardsCounter();
-    board.decrementPresentCardsCounter();
-
     card1.presentOnBoard = card2.presentOnBoard = false;
+    board.decrementPresentCardsCounter();
+    board.decrementPresentCardsCounter();
 
     return true;
 }
@@ -90,7 +88,7 @@ Card& GamePairs::letUserChooseCard()
     Card& card = *std::find_if(cards().begin(),
                                cards().end(),
                                [&](const Card card)->bool { return card.uniqueId == id; });
-    //Card& card = board.cardsInRows().at(y).at(x);
+
     return card;
 }
 
@@ -123,32 +121,39 @@ void GamePairs::showRound()
 
 void GamePairs::showBoard()
 {
+    std::stringstream stream;
+
     for (const std::vector<Card>& horizontalRow : board.cardsInRows())
-    {
-        for (const Card& card : horizontalRow)
-        {
-            if (card.presentOnBoard)
-            {
-                std::cout << "[" << card.uniqueId << "](" << card.color.r << "," << card.color.g << "," << card.color.b << "), ";
-            }
-            else
-            {
-                std::cout << "(NOTHING), ";
-            }
-        }
-        std::cout << std::endl;
-    }
+        printableRowToStream(horizontalRow, stream);
+
+    std::cout << stream.str();
 }
 
 void GamePairs::showScores()
 {
     for (const Player& player : players)
-    {
         std::cout << player.name << ":\t" << player.score << std::endl;
-    }
 }
 
 void GamePairs::gameEnd()
 {
     std::cout << "Game has just finished" << std::endl;
+}
+
+void GamePairs::printableRowToStream(const std::vector<Card>& horizontalRow, std::stringstream& stream) const
+{
+    for (const Card& card : horizontalRow)
+        stream << card.toString();
+
+    stream << std::endl;
+}
+
+bool GamePairs::cardsArePresent(const Card& card1, const Card& card2) const
+{
+    return card1.presentOnBoard && card2.presentOnBoard;
+}
+
+bool GamePairs::validChoice(const Card& card1, const Card& card2) const
+{
+    return card1.hasSameColorAs(card2) && !card1.isSameCard(card2) && cardsArePresent(card1, card2);
 }

@@ -9,7 +9,7 @@ Color::Color(const Color& color)
 Color::Color(const FrequentColor colorName)
     : Color(frequentColors().at(colorName)) {}
 
-bool Color::isSameColorAs(const Color& color)
+bool Color::isSameColorAs(const Color& color) const
 {
     return r == color.r && g == color.g && b == color.b;
 }

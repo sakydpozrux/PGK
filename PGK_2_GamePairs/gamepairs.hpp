@@ -36,6 +36,10 @@ protected:
   virtual void showCurrentPlayerFail();
   virtual void showScores();
   virtual void gameEnd();
+
+  void printableRowToStream(const std::vector<Card>& horizontalRow, std::stringstream& stream) const;
+  bool cardsArePresent(const Card& card1, const Card& card2) const;
+  bool validChoice(const Card& card1, const Card& card2) const;
 };
 
 #endif // GAMEPAIRS_HPP

@@ -1,4 +1,5 @@
 #include "card.hpp"
+#include <sstream>
 
 unsigned int Card::lastUniqueId = 0;
 
@@ -13,12 +14,33 @@ Card::Card(const Color& color)
 Card::Card(const FrequentColor colorName)
     : color(colorName), uniqueId(++lastUniqueId) {}
 
-bool Card::hasSameColorAs(const Card& card)
+bool Card::hasSameColorAs(const Card& card) const
 {
     return color.isSameColorAs(card.color);
 }
 
-bool Card::isSameCard(const Card& card)
+bool Card::isSameCard(const Card& card) const
 {
     return uniqueId == card.uniqueId;
+}
+
+std::string Card::toString() const
+{
+    return presentOnBoard ? presentString() : notPresentString();
+}
+
+std::string Card::notPresentString()
+{
+    return "(NOTHING), ";
+}
+
+std::string Card::presentString() const
+{
+    std::stringstream stream;
+
+    stream << "[" << uniqueId << "]";
+    stream << "(" << color.r << "," << color.g << "," << color.b << ")";
+    stream << ", ";
+
+    return stream.str();
 }

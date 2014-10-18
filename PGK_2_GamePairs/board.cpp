@@ -8,7 +8,6 @@ Board::Board(std::vector<Card> cards, unsigned int horizontalSize, unsigned int 
       cards(cards),
       presentCardsCounter(cards.size())
 {
-    // TODO: uncomment board shuffling if visual card choosing is implemented
     shuffle();
 }
 
@@ -32,19 +31,22 @@ std::vector<std::vector<Card> > Board::cardsInRows()
     std::vector<std::vector<Card> > rows;
     std::vector<Card> currentRow;
 
-    unsigned int i = 1;
+    unsigned int i = 0;
     for (const Card& card : cards)
-    {
-        currentRow.push_back(card);
-
-        if (i % horizontalSize == 0)
-        {
-            rows.push_back(currentRow);
-            currentRow.clear();
-            if (rows.size() >= verticalSize) return rows;
-        }
-        ++i;
-    }
+        pushCardToRows(card, i, rows, currentRow);
 
     return rows;
+}
+
+void Board::pushCardToRows(const Card& card, unsigned int& i,
+                           std::vector<std::vector<Card> >& rows, std::vector<Card>& currentRow)
+{
+    currentRow.push_back(card);
+
+    if (++i == horizontalSize)
+    {
+        i = 0;
+        rows.push_back(currentRow);
+        currentRow.clear();
+    }
 }

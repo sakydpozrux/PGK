@@ -18,7 +18,7 @@ public:
     Color(const Color& color);
     Color(const FrequentColor colorName);
 
-    bool isSameColorAs(const Color& color);
+    bool isSameColorAs(const Color& color) const;
 
     static std::list<Color> frequentColorsNames();
     static std::map<FrequentColor, Color> frequentColors();
