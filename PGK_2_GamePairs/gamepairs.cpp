@@ -1,26 +1,35 @@
 #include "gamepairs.hpp"
-#include <iostream>
-#include <sstream>
-#include <algorithm>
 
-GamePairs::GamePairs(std::list<Player> players, std::vector<Card> cards)
-    : players(players), board(cards) {}
+GamePairs::GamePairs(std::list<Player> players,
+                     std::vector<Card> cards,
+                     GamePairsDisplay *aDisplayDelegate)
+    : players(players), board(cards), displayDelegate(aDisplayDelegate) {}
+
+GamePairs::~GamePairs()
+{
+    delete displayDelegate;
+}
 
 void GamePairs::play()
 {
-    gameBegin();
+    displayDelegate->gameBegin();
 
     while (board.enoughCardsForNextRound())
     {
         nextRound();
-        showRound();
+        displayDelegate->showRound(round, currentPlayer, board);
 
-        tryTakeCards(letUserChooseCard(), letUserChooseCard()) ? showCurrentPlayerSuccess()
-                                                               : showCurrentPlayerFail();
+        if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
+                         displayDelegate->letUserChooseCard(cards())))
+        {
+            displayDelegate->showCurrentPlayerSuccess(currentPlayer);
+        } else {
+            displayDelegate->showCurrentPlayerFail(currentPlayer);
+        }
     }
 
-    showScores();
-    gameEnd();
+    displayDelegate->showScores(players);
+    displayDelegate->gameEnd();
 }
 
 void GamePairs::nextPlayer()
@@ -53,11 +62,6 @@ std::vector<Card> GamePairs::frequentCards()
     return frequentCards;
 }
 
-void GamePairs::gameBegin()
-{
-    std::cout << "Starting game" << std::endl;
-}
-
 inline void GamePairs::nextRound()
 {
     ++round;
@@ -76,76 +80,6 @@ bool GamePairs::tryTakeCards(Card& card1, Card& card2)
     board.decrementPresentCardsCounter();
 
     return true;
-}
-
-Card& GamePairs::letUserChooseCard()
-{
-    std::cout << "Choose card: ";
-
-    unsigned int id;
-    std::cin >> id;
-
-    Card& card = *std::find_if(cards().begin(),
-                               cards().end(),
-                               [&](const Card card)->bool { return card.uniqueId == id; });
-
-    return card;
-}
-
-void GamePairs::showCurrentPlayerSuccess()
-{
-    std::stringstream stream;
-
-    stream << "Player " << currentPlayer->name;
-    stream << " successfuly chooses two identical cards." << std::endl;
-
-    std::cout << stream.str();
-}
-
-void GamePairs::showCurrentPlayerFail()
-{
-    std::stringstream stream;
-
-    stream << "Player " << currentPlayer->name;
-    stream << " fails at choosing identical cards." << std::endl;
-
-    std::cout << stream.str();
-}
-
-void GamePairs::showRound()
-{
-    std::cout << "Round: " << round << "\t Turn: " << currentPlayer->name << " (" << currentPlayer->score << ")" << std::endl;
-
-    showBoard();
-}
-
-void GamePairs::showBoard()
-{
-    std::stringstream stream;
-
-    for (const std::vector<Card>& horizontalRow : board.cardsInRows())
-        printableRowToStream(horizontalRow, stream);
-
-    std::cout << stream.str();
-}
-
-void GamePairs::showScores()
-{
-    for (const Player& player : players)
-        std::cout << player.name << ":\t" << player.score << std::endl;
-}
-
-void GamePairs::gameEnd()
-{
-    std::cout << "Game has just finished" << std::endl;
-}
-
-void GamePairs::printableRowToStream(const std::vector<Card>& horizontalRow, std::stringstream& stream) const
-{
-    for (const Card& card : horizontalRow)
-        stream << card.toString();
-
-    stream << std::endl;
 }
 
 bool GamePairs::cardsArePresent(const Card& card1, const Card& card2) const

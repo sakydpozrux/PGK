@@ -26,7 +26,7 @@ void Board::shuffle()
     std::random_shuffle(cards.begin(), cards.end());
 }
 
-std::vector<std::vector<Card> > Board::cardsInRows()
+std::vector<std::vector<Card> > Board::cardsInRows() const
 {
     std::vector<std::vector<Card> > rows;
     std::vector<Card> currentRow;
@@ -39,7 +39,8 @@ std::vector<std::vector<Card> > Board::cardsInRows()
 }
 
 void Board::pushCardToRows(const Card& card, unsigned int& i,
-                           std::vector<std::vector<Card> >& rows, std::vector<Card>& currentRow)
+                           std::vector<std::vector<Card> >& rows,
+                           std::vector<Card>& currentRow) const
 {
     currentRow.push_back(card);
 

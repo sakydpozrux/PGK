@@ -22,11 +22,12 @@ public:
   void decrementPresentCardsCounter();
 
   void shuffle();
-  std::vector<std::vector<Card> > cardsInRows();
+  std::vector<std::vector<Card> > cardsInRows() const;
 
 private:
   void pushCardToRows(const Card& card, unsigned int& i,
-                      std::vector<std::vector<Card> >& rows, std::vector<Card>& currentRow);
+                      std::vector<std::vector<Card> >& rows,
+                      std::vector<Card>& currentRow) const;
 };
 
 #endif // BOARD_HPP

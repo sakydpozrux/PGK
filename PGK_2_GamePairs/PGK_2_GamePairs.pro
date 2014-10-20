@@ -9,11 +9,17 @@ SOURCES += \
     board.cpp \
     player.cpp \
     card.cpp \
-    color.cpp
+    color.cpp \
+    gamepairsdisplay.cpp \
+    gamepairstextdisplay.cpp \
+    gamepairsopengldisplay.cpp
 
 HEADERS += \
     gamepairs.hpp \
     board.hpp \
     player.hpp \
     card.hpp \
-    color.hpp
+    color.hpp \
+    gamepairsdisplay.hpp \
+    gamepairstextdisplay.hpp \
+    gamepairsopengldisplay.hpp
