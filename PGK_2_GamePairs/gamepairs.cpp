@@ -13,7 +13,7 @@ GamePairs::~GamePairs()
 void GamePairs::play()
 {
     displayDelegate->gameBegin();
-
+return; // TODO: remove
     while (board.enoughCardsForNextRound())
     {
         nextRound();

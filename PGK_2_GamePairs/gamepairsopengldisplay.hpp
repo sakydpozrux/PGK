@@ -19,6 +19,9 @@ public:
     void showCurrentPlayerFail(const Player *currentPlayer);
     void showScores(const std::list<Player>& players);
     void gameEnd();
+
+private:
+    void initializeGL();
 };
 
 #endif // GAMEPAIRSOPENGLDISPLAY_HPP
