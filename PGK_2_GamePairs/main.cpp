@@ -1,10 +1,10 @@
 #include "gamepairs.hpp"
-#include "gamepairstextdisplay.hpp"
+#include "gamepairsopengldisplay.hpp"
 
 int main()
 {
     std::list<Player> players = { Player("Szymon"), Player() };
-    GamePairsDisplay *displayDelegate = new GamePairsTextDisplay();
+    GamePairsDisplay *displayDelegate = new GamePairsOpenGLDisplay();
 
     GamePairs(players, displayDelegate).play();
 
