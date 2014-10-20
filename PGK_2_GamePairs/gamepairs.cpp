@@ -1,8 +1,8 @@
 #include "gamepairs.hpp"
 
 GamePairs::GamePairs(std::list<Player> players,
-                     std::vector<Card> cards,
-                     GamePairsDisplay *aDisplayDelegate)
+                     GamePairsDisplay *aDisplayDelegate,
+                     std::vector<Card> cards)
     : players(players), board(cards), displayDelegate(aDisplayDelegate) {}
 
 GamePairs::~GamePairs()

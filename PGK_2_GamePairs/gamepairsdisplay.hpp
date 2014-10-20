@@ -5,13 +5,12 @@
 #include "board.hpp"
 
 class GamePairs;
-class Card;
 
 class GamePairsDisplay
 {
 public:
-    GamePairsDisplay() {};
-    virtual ~GamePairsDisplay() {};
+    GamePairsDisplay() {}
+    virtual ~GamePairsDisplay() {}
 
     virtual void gameBegin() = 0;
     virtual void showRound(const unsigned int round,

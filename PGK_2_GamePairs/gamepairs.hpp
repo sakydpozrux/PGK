@@ -14,8 +14,8 @@ class GamePairs
 public:
   // I assume that there is at least one player.
   GamePairs(std::list<Player> players,
-            std::vector<Card> cards = frequentCards(),
-            GamePairsDisplay *aDisplayDelegate = new GamePairsTextDisplay());
+            GamePairsDisplay *aDisplayDelegate = new GamePairsTextDisplay(),
+            std::vector<Card> cards = frequentCards());
 
   ~GamePairs();
 

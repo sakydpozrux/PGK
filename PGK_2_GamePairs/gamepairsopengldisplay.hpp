@@ -1,13 +1,13 @@
-#ifndef GAMEPAIRSTEXTDISPLAY_HPP
-#define GAMEPAIRSTEXTDISPLAY_HPP
+#ifndef GAMEPAIRSOPENGLDISPLAY_HPP
+#define GAMEPAIRSOPENGLDISPLAY_HPP
 
 #include "gamepairsdisplay.hpp"
 
-class GamePairsTextDisplay : public GamePairsDisplay
+class GamePairsOpenGLDisplay : public GamePairsDisplay
 {
 public:
-    GamePairsTextDisplay() {}
-    virtual ~GamePairsTextDisplay() {}
+    GamePairsOpenGLDisplay() {}
+    virtual ~GamePairsOpenGLDisplay() {}
 
     void gameBegin();
     void showRound(const unsigned int round,
@@ -19,9 +19,6 @@ public:
     void showCurrentPlayerFail(const Player *currentPlayer);
     void showScores(const std::list<Player>& players);
     void gameEnd();
-
-private:
-    void printableRowToStream(const std::vector<Card>& horizontalRow, std::stringstream& stream) const;
 };
 
-#endif // GAMEPAIRSTEXTDISPLAY_HPP
+#endif // GAMEPAIRSOPENGLDISPLAY_HPP
