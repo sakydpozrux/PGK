@@ -15,7 +15,8 @@ SOURCES += \
     color.cpp \
     gamepairsdisplay.cpp \
     gamepairstextdisplay.cpp \
-    gamepairsopengldisplay.cpp
+    gamepairsopengldisplay.cpp \
+    shaders.cpp
 
 HEADERS += \
     gamepairs.hpp \
@@ -25,4 +26,5 @@ HEADERS += \
     color.hpp \
     gamepairsdisplay.hpp \
     gamepairstextdisplay.hpp \
-    gamepairsopengldisplay.hpp
+    gamepairsopengldisplay.hpp \
+    shaders.hpp

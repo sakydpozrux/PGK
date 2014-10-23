@@ -6,7 +6,7 @@
 class GamePairsOpenGLDisplay : public GamePairsDisplay
 {
 public:
-    GamePairsOpenGLDisplay() {}
+    GamePairsOpenGLDisplay(unsigned int aWidth = 800, unsigned int aHeight = 600);
     virtual ~GamePairsOpenGLDisplay() {}
 
     void gameBegin();
@@ -21,7 +21,13 @@ public:
     void gameEnd();
 
 private:
+    unsigned int width;
+    unsigned int height;
+
     void initializeGL();
+
+    static const std::string simpleVertexShaderCode;
+    static const std::string simpleFragmentShaderCode;
 };
 
 #endif // GAMEPAIRSOPENGLDISPLAY_HPP
