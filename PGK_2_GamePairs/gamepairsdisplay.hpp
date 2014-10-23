@@ -13,15 +13,19 @@ public:
     virtual ~GamePairsDisplay() {}
 
     virtual void gameBegin() = 0;
-    virtual void showRound(const unsigned int round,
-                           Player *currentPlayer,
-                           const Board& board) = 0;
-    virtual void showBoard(const Board& board) = 0;
+    virtual void showRound(const unsigned int round) = 0;
+    virtual void showBoard() = 0;
     virtual Card& letUserChooseCard(std::vector<Card>& cards) = 0;
-    virtual void showCurrentPlayerSuccess(const Player *currentPlayer) = 0;
-    virtual void showCurrentPlayerFail(const Player *currentPlayer) = 0;
-    virtual void showScores(const std::list<Player>& players) = 0;
+    virtual void showCurrentPlayerSuccess() = 0;
+    virtual void showCurrentPlayerFail() = 0;
+    virtual void showScore() = 0;
     virtual void gameEnd() = 0;
+
+    Player *player;
+    void setPlayer(Player* aPlayer);
+
+    Board *board;
+    void setBoard(Board* aBoard);
 };
 
 #endif // GAMEPAIRSDISPLAY_HPP

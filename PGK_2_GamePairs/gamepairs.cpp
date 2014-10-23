@@ -1,9 +1,13 @@
 #include "gamepairs.hpp"
 
-GamePairs::GamePairs(std::list<Player> players,
+GamePairs::GamePairs(std::string playerName,
                      GamePairsDisplay *aDisplayDelegate,
                      std::vector<Card> cards)
-    : players(players), board(cards), displayDelegate(aDisplayDelegate) {}
+    : player(playerName), board(cards), displayDelegate(aDisplayDelegate)
+{
+    displayDelegate->setPlayer(&player);
+    displayDelegate->setBoard(&board);
+}
 
 GamePairs::~GamePairs()
 {
@@ -16,29 +20,21 @@ void GamePairs::play()
 
     while (board.enoughCardsForNextRound())
     {
-        nextRound();
-        displayDelegate->showRound(round, currentPlayer, board);
-return; // TODO: remove
+
+        displayDelegate->showRound(round);
+return; // TODO: Remove it when possible
         if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
                          displayDelegate->letUserChooseCard(cards())))
         {
-            displayDelegate->showCurrentPlayerSuccess(currentPlayer);
+            displayDelegate->showCurrentPlayerSuccess();
         } else {
-            displayDelegate->showCurrentPlayerFail(currentPlayer);
+            displayDelegate->showCurrentPlayerFail();
+            nextRound();
         }
     }
 
-    displayDelegate->showScores(players);
+    displayDelegate->showScore();
     displayDelegate->gameEnd();
-}
-
-void GamePairs::nextPlayer()
-{
-    static std::list<Player>::iterator it = players.end();
-
-    if (++it == players.end()) it = players.begin();
-
-    currentPlayer = &*it; // REVIEW: Better idea anybody?
 }
 
 std::vector<Card>& GamePairs::cards()
@@ -65,7 +61,6 @@ std::vector<Card> GamePairs::frequentCards()
 inline void GamePairs::nextRound()
 {
     ++round;
-    nextPlayer();
 }
 
 bool GamePairs::tryTakeCards(Card& card1, Card& card2)
@@ -73,7 +68,7 @@ bool GamePairs::tryTakeCards(Card& card1, Card& card2)
     if (!validChoice(card1, card2))
         return false;
 
-    currentPlayer->incrementScore();
+    player.incrementScore();
 
     card1.presentOnBoard = card2.presentOnBoard = false;
     board.decrementPresentCardsCounter();

@@ -11,14 +11,12 @@ public:
     virtual ~GamePairsOpenGLDisplay() {}
 
     void gameBegin();
-    void showRound(const unsigned int round,
-                   Player *currentPlayer,
-                   const Board& board);
-    void showBoard(const Board& board);
+    void showRound(const unsigned int round);
+    void showBoard();
     Card& letUserChooseCard(std::vector<Card>& cards);
-    void showCurrentPlayerSuccess(const Player *currentPlayer);
-    void showCurrentPlayerFail(const Player *currentPlayer);
-    void showScores(const std::list<Player>& players);
+    void showCurrentPlayerSuccess();
+    void showCurrentPlayerFail();
+    void showScore();
     void gameEnd();
 
 private:
@@ -28,6 +26,7 @@ private:
     GLuint programID = 0;
 
     void initializeGL();
+    void cleanupGL();
 
     static const std::string simpleVertexShaderCode;
     static const std::string simpleFragmentShaderCode;

@@ -52,13 +52,11 @@ void GamePairsOpenGLDisplay::gameBegin()
     initializeGL();
 }
 
-void GamePairsOpenGLDisplay::showRound(const unsigned int round,
-                                       Player *currentPlayer,
-                                       const Board& board)
+void GamePairsOpenGLDisplay::showRound(const unsigned int round)
 {
 }
 
-void GamePairsOpenGLDisplay::showBoard(const Board& board)
+void GamePairsOpenGLDisplay::showBoard()
 {
 }
 
@@ -67,20 +65,21 @@ Card& GamePairsOpenGLDisplay::letUserChooseCard(std::vector<Card>& cards)
     //return &(new Card(RED));
 }
 
-void GamePairsOpenGLDisplay::showCurrentPlayerSuccess(const Player *currentPlayer)
+void GamePairsOpenGLDisplay::showCurrentPlayerSuccess()
 {
 }
 
-void GamePairsOpenGLDisplay::showCurrentPlayerFail(const Player *currentPlayer)
+void GamePairsOpenGLDisplay::showCurrentPlayerFail()
 {
 }
 
-void GamePairsOpenGLDisplay::showScores(const std::list<Player>& players)
+void GamePairsOpenGLDisplay::showScore()
 {
 }
 
 void GamePairsOpenGLDisplay::gameEnd()
 {
+    cleanupGL();
 }
 
 
@@ -187,4 +186,9 @@ void GamePairsOpenGLDisplay::initializeGL()
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
+}
+
+void GamePairsOpenGLDisplay::cleanupGL()
+{
+    // TODO: paste here cleaning code
 }

@@ -1,12 +1,19 @@
 #include "gamepairs.hpp"
 #include "gamepairsopengldisplay.hpp"
+#include "gamepairstextdisplay.hpp"
+
+#define DISPLAY_GL 1
 
 int main()
 {
-    std::list<Player> players = { Player("Szymon"), Player() };
-    GamePairsDisplay *displayDelegate = new GamePairsOpenGLDisplay();
+    GamePairsDisplay *displayDelegate;
 
-    GamePairs(players, displayDelegate).play();
+    if (DISPLAY_GL)
+        displayDelegate = new GamePairsOpenGLDisplay();
+    else
+        displayDelegate = new GamePairsTextDisplay();
+
+    GamePairs("Player", displayDelegate).play();
 
     return 0;
 }

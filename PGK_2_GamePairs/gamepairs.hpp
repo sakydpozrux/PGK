@@ -12,8 +12,7 @@
 class GamePairs
 {
 public:
-  // I assume that there is at least one player.
-  GamePairs(std::list<Player> players,
+  GamePairs(std::string playerName,
             GamePairsDisplay *aDisplayDelegate = new GamePairsTextDisplay(),
             std::vector<Card> cards = frequentCards());
 
@@ -21,13 +20,10 @@ public:
 
   void play();
 
-  std::list<Player> players;
+  Player player;
   Board board;
 
-  unsigned int round = 0;
-
-  Player *currentPlayer;
-  void nextPlayer();
+  unsigned int round = 1;
 
   std::vector<Card>& cards();
   static std::vector<Card> frequentCards();

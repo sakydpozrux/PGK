@@ -9,22 +9,20 @@ void GamePairsTextDisplay::gameBegin()
     std::cout << "Starting game" << std::endl;
 }
 
-void GamePairsTextDisplay::showRound(const unsigned int round,
-                                     Player *currentPlayer,
-                                     const Board& board)
+void GamePairsTextDisplay::showRound(const unsigned int round)
 {
     std::cout << "Round: " << round
-              << "\t Turn: " << currentPlayer->name
-              << " (" << currentPlayer->score << ")" << std::endl;
+              << "\t Turn: " << player->name
+              << " (" << player->score << ")" << std::endl;
 
-    showBoard(board);
+    showBoard();
 }
 
-void GamePairsTextDisplay::showBoard(const Board& board)
+void GamePairsTextDisplay::showBoard()
 {
     std::stringstream stream;
 
-    for (const std::vector<Card>& horizontalRow : board.cardsInRows())
+    for (const std::vector<Card>& horizontalRow : board->cardsInRows())
         printableRowToStream(horizontalRow, stream);
 
     std::cout << stream.str();
@@ -44,30 +42,29 @@ Card& GamePairsTextDisplay::letUserChooseCard(std::vector<Card>& cards)
     return card;
 }
 
-void GamePairsTextDisplay::showCurrentPlayerSuccess(const Player *currentPlayer)
+void GamePairsTextDisplay::showCurrentPlayerSuccess()
 {
     std::stringstream stream;
 
-    stream << "Player " << currentPlayer->name;
+    stream << "Player " << player->name;
     stream << " successfuly chooses two identical cards." << std::endl;
 
     std::cout << stream.str();
 }
 
-void GamePairsTextDisplay::showCurrentPlayerFail(const Player *currentPlayer)
+void GamePairsTextDisplay::showCurrentPlayerFail()
 {
     std::stringstream stream;
 
-    stream << "Player " << currentPlayer->name;
+    stream << "Player " << player->name;
     stream << " fails at choosing identical cards." << std::endl;
 
     std::cout << stream.str();
 }
 
-void GamePairsTextDisplay::showScores(const std::list<Player>& players)
+void GamePairsTextDisplay::showScore()
 {
-    for (const Player& player : players)
-        std::cout << player.name << ":\t" << player.score << std::endl;
+    std::cout << player->name << ":\t" << player->score << std::endl;
 }
 
 void GamePairsTextDisplay::gameEnd()
