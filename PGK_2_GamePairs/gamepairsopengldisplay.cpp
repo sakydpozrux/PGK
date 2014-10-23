@@ -15,7 +15,6 @@ const std::string GamePairsOpenGLDisplay::simpleVertexShaderCode =
 R"sourceCode(
 #version 330 core
 
-// Input vertex data, different for all executions of this shader.
 in vec2 position;
 in vec3 color;
 
@@ -40,7 +39,6 @@ out vec4 color;
 
 void main()
 {
-        // Output color = red
         color = vec4(Color, 1.0);
 }
 
@@ -125,8 +123,7 @@ void GamePairsOpenGLDisplay::initializeGL()
     glBindVertexArray(VertexArrayID);
 
     // Create and compile our GLSL program from the shaders
-    GLuint programID = Shaders::loadShaderFromString(simpleVertexShaderCode, simpleFragmentShaderCode);
-
+    programID = Shaders::loadShaderFromString(simpleVertexShaderCode, simpleFragmentShaderCode);
 
     static const GLfloat g_vertex_buffer_data[] = {
         0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
@@ -140,7 +137,6 @@ void GamePairsOpenGLDisplay::initializeGL()
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
     do{
-
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -156,10 +152,9 @@ void GamePairsOpenGLDisplay::initializeGL()
             2,                  // size
             GL_FLOAT,           // type
             GL_FALSE,           // normalized?
-            5*sizeof(float),                  // stride
+            5 * sizeof(float),  // stride
             (void*)0            // array buffer offset
         );
-
 
         GLint colAttrib = glGetAttribLocation(programID, "color");
         glEnableVertexAttribArray(colAttrib);
@@ -168,7 +163,7 @@ void GamePairsOpenGLDisplay::initializeGL()
             3, // rgb)
             GL_FLOAT,
             GL_FALSE, //normalized?
-            5*sizeof(float),
+            5 * sizeof(float),
             (void*)(2 * sizeof(float)) // offset
        );
 

@@ -13,12 +13,12 @@ GamePairs::~GamePairs()
 void GamePairs::play()
 {
     displayDelegate->gameBegin();
-return; // TODO: remove
+
     while (board.enoughCardsForNextRound())
     {
         nextRound();
         displayDelegate->showRound(round, currentPlayer, board);
-
+return; // TODO: remove
         if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
                          displayDelegate->letUserChooseCard(cards())))
         {

@@ -2,6 +2,7 @@
 #define GAMEPAIRSOPENGLDISPLAY_HPP
 
 #include "gamepairsdisplay.hpp"
+#include <GL/glew.h>
 
 class GamePairsOpenGLDisplay : public GamePairsDisplay
 {
@@ -23,6 +24,8 @@ public:
 private:
     unsigned int width;
     unsigned int height;
+
+    GLuint programID = 0;
 
     void initializeGL();
 
