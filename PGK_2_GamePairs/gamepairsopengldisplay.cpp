@@ -101,7 +101,7 @@ void GamePairsOpenGLDisplay::initializeGL()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(800, 600, "Tutorial 02 - Red triangle", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Game Pairs", NULL, NULL);
     if( window == NULL ){
         fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
         glfwTerminate();
@@ -128,7 +128,6 @@ void GamePairsOpenGLDisplay::initializeGL()
 
     // Create and compile our GLSL program from the shaders
     GLuint programID = Shaders::loadShaderFromString(simpleVertexShaderCode, simpleFragmentShaderCode);
-    //it was: LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
 
 
     static const GLfloat g_vertex_buffer_data[] = {
