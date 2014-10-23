@@ -1,5 +1,6 @@
 #include "gamepairsopengldisplay.hpp"
 #include "shaders.hpp"
+#include "exception"
 
 #include <GL/glew.h>
 
@@ -15,13 +16,15 @@ R"sourceCode(
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
-layout(location = 0) in vec3 vertexPosition_modelspace;
+in vec2 position;
+in vec3 color;
 
-void main(){
+out vec3 Color;
 
-    gl_Position.xyz = vertexPosition_modelspace;
-    gl_Position.w = 1.0;
-
+void main()
+{
+    gl_Position = vec4(position, 0.0, 1.0);
+    Color = color;
 }
 
 )sourceCode";
@@ -32,15 +35,13 @@ const std::string GamePairsOpenGLDisplay::simpleFragmentShaderCode =
 R"sourceCode(
 #version 330 core
 
-// Ouput data
-out vec3 color;
+in vec3 Color;
+out vec4 color;
 
 void main()
 {
-
         // Output color = red
-        color = vec3(1,0,0);
-
+        color = vec4(Color, 1.0);
 }
 
 )sourceCode";
@@ -89,10 +90,8 @@ void GamePairsOpenGLDisplay::gameEnd()
 void GamePairsOpenGLDisplay::initializeGL()
 {
     // Initialise GLFW
-    if( !glfwInit() )
-    {
-        fprintf( stderr, "Failed to initialize GLFW\n" );
-        //return -1; TODO: raise exception
+    if(!glfwInit()) {
+        throw std::runtime_error(std::string("Failed to initialize GLFW\n"));
     }
 
     glfwWindowHint(GLFW_SAMPLES, 4);
@@ -102,10 +101,9 @@ void GamePairsOpenGLDisplay::initializeGL()
 
     // Open a window and create its OpenGL context
     window = glfwCreateWindow(width, height, "Game Pairs", NULL, NULL);
-    if( window == NULL ){
-        fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+    if(!window) {
         glfwTerminate();
-        //return -1; TODO: raise exception
+        throw std::runtime_error(std::string("Failed to open GLFW window.\n"));
     }
     glfwMakeContextCurrent(window);
 
@@ -120,7 +118,7 @@ void GamePairsOpenGLDisplay::initializeGL()
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     // Dark blue background
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.1f, 0.1f, 0.2f, 0.0f);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -131,9 +129,9 @@ void GamePairsOpenGLDisplay::initializeGL()
 
 
     static const GLfloat g_vertex_buffer_data[] = {
-        -0.5f, -1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-         0.0f,  1.0f, 0.0f,
+        0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
+       -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
     };
 
     GLuint vertexbuffer;
@@ -144,27 +142,40 @@ void GamePairsOpenGLDisplay::initializeGL()
     do{
 
         // Clear the screen
-        glClear( GL_COLOR_BUFFER_BIT );
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // Use our shader
         glUseProgram(programID);
 
         // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
+        GLint posAttrib = glGetAttribLocation(programID, "position");
+        glEnableVertexAttribArray(posAttrib);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
         glVertexAttribPointer(
-            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-            3,                  // size
+            posAttrib,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            2,                  // size
             GL_FLOAT,           // type
             GL_FALSE,           // normalized?
-            0,                  // stride
+            5*sizeof(float),                  // stride
             (void*)0            // array buffer offset
         );
+
+
+        GLint colAttrib = glGetAttribLocation(programID, "color");
+        glEnableVertexAttribArray(colAttrib);
+        glVertexAttribPointer(
+            colAttrib, // position of color attribute
+            3, // rgb)
+            GL_FLOAT,
+            GL_FALSE, //normalized?
+            5*sizeof(float),
+            (void*)(2 * sizeof(float)) // offset
+       );
 
         // Draw the triangle !
         glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
 
-        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(programID);
 
         // Swap buffers
         glfwSwapBuffers(window);
