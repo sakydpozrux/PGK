@@ -6,7 +6,7 @@ unsigned int Card::lastUniqueId = 0;
 Card::Card(const Card& card)
     : color(card.color.r, card.color.g, card.color.b),
       uniqueId(card.uniqueId),
-      presentOnBoard(card.presentOnBoard) {}
+      colorVisibleOnBoard(card.isVisible()) {}
 
 Card::Card(const Color& color)
     : color(color), uniqueId(++lastUniqueId) {}
@@ -26,7 +26,17 @@ bool Card::isSameCard(const Card& card) const
 
 std::string Card::toString() const
 {
-    return presentOnBoard ? presentString() : notPresentString();
+    return colorVisibleOnBoard ? presentString() : notPresentString();
+}
+
+bool Card::isVisible() const
+{
+    return colorVisibleOnBoard;
+}
+
+void Card::setVisible()
+{
+    colorVisibleOnBoard = false;
 }
 
 std::string Card::notPresentString()

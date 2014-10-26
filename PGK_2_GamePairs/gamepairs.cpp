@@ -14,24 +14,26 @@ GamePairs::~GamePairs()
     delete displayDelegate;
 }
 
+void GamePairs::mainGameLoop()
+{
+    displayDelegate->showRound(round);
+
+    if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
+                     displayDelegate->letUserChooseCard(cards())))
+    {
+        displayDelegate->showCurrentPlayerSuccess();
+    } else {
+        displayDelegate->showCurrentPlayerFail();
+        nextRound();
+    }
+}
+
 void GamePairs::play()
 {
     displayDelegate->gameBegin();
 
     while (board.enoughCardsForNextRound())
-    {
-
-        displayDelegate->showRound(round);
-return; // TODO: Remove it when possible
-        if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
-                         displayDelegate->letUserChooseCard(cards())))
-        {
-            displayDelegate->showCurrentPlayerSuccess();
-        } else {
-            displayDelegate->showCurrentPlayerFail();
-            nextRound();
-        }
-    }
+        mainGameLoop();
 
     displayDelegate->showScore();
     displayDelegate->gameEnd();
@@ -70,16 +72,16 @@ bool GamePairs::tryTakeCards(Card& card1, Card& card2)
 
     player.incrementScore();
 
-    card1.presentOnBoard = card2.presentOnBoard = false;
-    board.decrementPresentCardsCounter();
-    board.decrementPresentCardsCounter();
+    card1.setVisible();
+    card2.setVisible();
+    board.decreaseVisibleCardsCounter();
 
     return true;
 }
 
 bool GamePairs::cardsArePresent(const Card& card1, const Card& card2) const
 {
-    return card1.presentOnBoard && card2.presentOnBoard;
+    return card1.isVisible() && card2.isVisible();
 }
 
 bool GamePairs::validChoice(const Card& card1, const Card& card2) const

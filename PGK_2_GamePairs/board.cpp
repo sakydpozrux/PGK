@@ -16,9 +16,9 @@ bool Board::enoughCardsForNextRound()
     return presentCardsCounter >= 2;
 }
 
-void Board::decrementPresentCardsCounter()
+void Board::decreaseVisibleCardsCounter()
 {
-    --presentCardsCounter;
+    presentCardsCounter -= 2;
 }
 
 void Board::shuffle()

@@ -19,7 +19,7 @@ public:
   unsigned int presentCardsCounter;
 
   bool enoughCardsForNextRound();
-  void decrementPresentCardsCounter();
+  void decreaseVisibleCardsCounter();
 
   void shuffle();
   std::vector<std::vector<Card> > cardsInRows() const;

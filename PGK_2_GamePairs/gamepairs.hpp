@@ -30,6 +30,7 @@ public:
 
   GamePairsDisplay *displayDelegate;
 
+  void mainGameLoop();
 protected:
   void nextRound();
   bool tryTakeCards(Card& card1, Card& card2);

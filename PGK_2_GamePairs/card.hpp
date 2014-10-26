@@ -17,13 +17,16 @@ public:
 
     Color color;
     unsigned int uniqueId;
-    bool presentOnBoard = true;
+
+    bool isVisible() const;
+    void setVisible();
 
     static unsigned int lastUniqueId;
 
 private:
     static std::string notPresentString();
     std::string presentString() const;
+    bool colorVisibleOnBoard = true;
 };
 
 #endif // CARD_HPP

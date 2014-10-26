@@ -1,16 +1,59 @@
 #include "gamepairsopengldisplay.hpp"
 #include "shaders.hpp"
 #include "exception"
-
+#include <iostream>
 #include <GL/glew.h>
-
-#include <GLFW/glfw3.h>
-GLFWwindow* window;
 
 #include <glm/glm.hpp>
 using namespace glm;
 
 // REFACTOR: Do something with these ugly const strings. Even QtCreator doesn't correctly parse it. :D
+// BEGIN
+const std::string GamePairsOpenGLDisplay::konVertexShaderCode =
+R"sourceCode(
+#version 330 core
+
+// Ouput data
+out vec3 color;
+
+uniform float red;
+uniform float green;
+uniform float blue;
+void main()
+{
+
+    // Output color = red
+    color = vec3(red,green,blue);
+
+}
+)sourceCode";
+// END
+
+
+// REFACTOR: Same here.
+// BEGIN
+const std::string GamePairsOpenGLDisplay::konFragmentShaderCode =
+R"sourceCode(
+#version 330 core
+
+// Ouput data
+out vec3 color;
+
+uniform float red;
+uniform float green;
+uniform float blue;
+void main()
+{
+
+    // Output color = red
+    color = vec3(red,green,blue);
+
+}
+)sourceCode";
+// END
+
+// REFACTOR: Do something with these ugly const strings. Even QtCreator doesn't correctly parse it. :D
+// BEGIN
 const std::string GamePairsOpenGLDisplay::simpleVertexShaderCode =
 R"sourceCode(
 #version 330 core
@@ -19,37 +62,83 @@ in vec2 position;
 in vec3 color;
 
 out vec3 Color;
-
 void main()
 {
     gl_Position = vec4(position, 0.0, 1.0);
     Color = color;
 }
-
 )sourceCode";
+// END
 
 
 // REFACTOR: Same here.
+// BEGIN
 const std::string GamePairsOpenGLDisplay::simpleFragmentShaderCode =
 R"sourceCode(
 #version 330 core
 
 in vec3 Color;
 out vec4 color;
-
 void main()
 {
-        color = vec4(Color, 1.0);
+    color = vec4(Color, 1.0);
 }
-
 )sourceCode";
+// END
 
 GamePairsOpenGLDisplay::GamePairsOpenGLDisplay(unsigned int aWidth, unsigned int aHeight)
     : GamePairsDisplay(), width(aWidth), height(aHeight) {}
 
 void GamePairsOpenGLDisplay::gameBegin()
 {
-    initializeGL();
+    initialize();
+    doSomethingFunny();
+}
+
+void GamePairsOpenGLDisplay::setKeyCallback()
+{
+    glfwSetKeyCallback(window, keyCallback);
+
+    // Ensure we can capture the escape key being pressed below
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+}
+
+void GamePairsOpenGLDisplay::setBackgroundColor()
+{
+    glClearColor(0.1f, 0.1f, 0.2f, 0.0f);
+}
+
+void GamePairsOpenGLDisplay::setProgramIdWithCompilingShaders()
+{
+    programID = Shaders::loadShaderFromString(simpleVertexShaderCode, simpleFragmentShaderCode);
+}
+
+void GamePairsOpenGLDisplay::initialize()
+{
+    initializeGLFW();
+    openWindowAndCreateItsContext();
+    initializeGLEW();
+
+    setKeyCallback();
+    setBackgroundColor();
+
+    VertexArrayID = new GLuint();
+    glGenVertexArrays(1, VertexArrayID);
+    glBindVertexArray(*VertexArrayID);
+
+    vertexbuffer = new GLuint();
+    glGenBuffers(1, vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, *vertexbuffer);
+
+    static const GLfloat g_vertex_buffer_data[] = {
+        0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
+       -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
+    };
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    setProgramIdWithCompilingShaders();
 }
 
 void GamePairsOpenGLDisplay::showRound(const unsigned int round)
@@ -82,11 +171,8 @@ void GamePairsOpenGLDisplay::gameEnd()
     cleanupGL();
 }
 
-
-// TODO: Refactor method below. Extract it to smaller functions.
-void GamePairsOpenGLDisplay::initializeGL()
+void GamePairsOpenGLDisplay::initializeGLFW()
 {
-    // Initialise GLFW
     if(!glfwInit()) {
         throw std::runtime_error(std::string("Failed to initialize GLFW\n"));
     }
@@ -94,48 +180,33 @@ void GamePairsOpenGLDisplay::initializeGL()
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+}
 
-    // Open a window and create its OpenGL context
+void GamePairsOpenGLDisplay::openWindowAndCreateItsContext()
+{
     window = glfwCreateWindow(width, height, "Game Pairs", NULL, NULL);
-    if(!window) {
+    if(!window)
+    {
         glfwTerminate();
         throw std::runtime_error(std::string("Failed to open GLFW window.\n"));
     }
     glfwMakeContextCurrent(window);
+}
 
-    // Initialize GLEW
+void GamePairsOpenGLDisplay::initializeGLEW()
+{
     glewExperimental = true; // Needed for core profile
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW\n");
-        //return -1; TODO: raise exception
-    }
 
-    // Ensure we can capture the escape key being pressed below
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    if (glewInit() != GLEW_OK)
+        throw std::runtime_error(std::string("Failed to initialize GLEW\n"));
+}
 
-    // Dark blue background
-    glClearColor(0.1f, 0.1f, 0.2f, 0.0f);
-
-    GLuint VertexArrayID;
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
-
-    // Create and compile our GLSL program from the shaders
-    programID = Shaders::loadShaderFromString(simpleVertexShaderCode, simpleFragmentShaderCode);
-
-    static const GLfloat g_vertex_buffer_data[] = {
-        0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
-       -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
-    };
-
-    GLuint vertexbuffer;
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    do{
+// TODO: Refactor method below. Extract it to smaller functions.
+void GamePairsOpenGLDisplay::doSomethingFunny()
+{
+    do {
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -145,7 +216,7 @@ void GamePairsOpenGLDisplay::initializeGL()
         // 1rst attribute buffer : vertices
         GLint posAttrib = glGetAttribLocation(programID, "position");
         glEnableVertexAttribArray(posAttrib);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, *vertexbuffer);
         glVertexAttribPointer(
             posAttrib,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
             2,                  // size
@@ -178,17 +249,42 @@ void GamePairsOpenGLDisplay::initializeGL()
     } // Check if the ESC key was pressed or the window was closed
     while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0 );
+}
 
+void GamePairsOpenGLDisplay::cleanupGL()
+{
     // Cleanup VBO
-    glDeleteBuffers(1, &vertexbuffer);
-    glDeleteVertexArrays(1, &VertexArrayID);
+    glDeleteBuffers(1, vertexbuffer);
+    glDeleteVertexArrays(1, VertexArrayID);
     glDeleteProgram(programID);
+
+    delete VertexArrayID;
+    delete vertexbuffer;
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
 }
 
-void GamePairsOpenGLDisplay::cleanupGL()
+void GamePairsOpenGLDisplay::keyCallback(GLFWwindow*, keyidentifier key, int scancode, int action, int mods)
 {
-    // TODO: paste here cleaning code
+    std::cout << "keyCallback(..., int key = " << key
+              << ", int scancode = " << scancode
+              << ", int action = " << action
+              << ", int mods = " << mods << ")" << std::endl;
+
+    // Don't do anything if key is releasing
+    if (action == GLFW_RELEASE)
+        return;
+
+    if (keyIsOneOfArrowKeys(key))
+        return; // TODO updateCursorPosition;
+
+    if (key == GLFW_KEY_SPACE)
+        return; // TODO applyCursorPosition;
+
+}
+
+bool GamePairsOpenGLDisplay::keyIsOneOfArrowKeys(keyidentifier key)
+{
+    return (key == GLFW_KEY_UP || key == GLFW_KEY_DOWN || key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT);
 }

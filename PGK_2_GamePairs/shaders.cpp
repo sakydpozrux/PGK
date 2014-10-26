@@ -61,7 +61,6 @@ GLuint Shaders::loadShadersFromFile(const std::string& vertexFilePath, const std
                                     contentsOfFile(fragmentFilePath));
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
-        return 0;
     }
 
     return 0;

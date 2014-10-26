@@ -19,9 +19,7 @@ std::list<Color> Color::frequentColorsNames()
     std::list<Color> frequentColorsNames;
 
     for (auto it = frequentColors().begin(); it != frequentColors().end(); ++it)
-    {
         frequentColorsNames.push_back(it->first);
-    }
 
     return frequentColorsNames;
 }
