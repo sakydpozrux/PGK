@@ -22,6 +22,8 @@ public:
 
     bool isSameColorAs(const Color& color) const;
 
+    static Color gray();
+
     static std::list<Color> frequentColorsNames();
     static std::map<FrequentColor, Color> frequentColors();
 };

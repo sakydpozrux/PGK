@@ -1,4 +1,8 @@
 #include "gamepairs.hpp"
+#include <chrono>
+#include <thread>
+
+const std::chrono::milliseconds kPauseDuration(500);
 
 GamePairs::GamePairs(std::string playerName,
                      GamePairsDisplay *aDisplayDelegate,
@@ -17,9 +21,10 @@ GamePairs::~GamePairs()
 void GamePairs::mainGameLoop()
 {
     displayDelegate->showRound(round);
+    displayDelegate->showBoard();
 
-    if (true)//tryTakeCards(displayDelegate->letUserChooseCard(cards()),
-             //        displayDelegate->letUserChooseCard(cards())))
+    if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
+                     displayDelegate->letUserChooseCard(cards())))
     {
         displayDelegate->showCurrentPlayerSuccess();
     } else {
@@ -32,7 +37,7 @@ void GamePairs::play()
 {
     displayDelegate->gameBegin();
 
-    //while (board.enoughCardsForNextRound())
+    while (board.enoughCardsForNextRound())
         mainGameLoop();
 
     displayDelegate->showScore();
@@ -67,13 +72,20 @@ inline void GamePairs::nextRound()
 
 bool GamePairs::tryTakeCards(Card& card1, Card& card2)
 {
+    card1.setVisible(true);
+    card2.setVisible(true);
+    displayDelegate->showBoard();
+
+    std::this_thread::sleep_for(kPauseDuration);
+
+    card1.setVisible(false);
+    card2.setVisible(false);
+
     if (!validChoice(card1, card2))
         return false;
 
     player.incrementScore();
 
-    card1.setVisible(true);
-    card2.setVisible(true);
     board.decreaseVisibleCardsCounter();
     card1.removeFromBoard();
     card2.removeFromBoard();
@@ -83,7 +95,7 @@ bool GamePairs::tryTakeCards(Card& card1, Card& card2)
 
 bool GamePairs::cardsArePresent(const Card& card1, const Card& card2) const
 {
-    return card1.isVisible() && card2.isVisible();
+    return card1.isPresent() && card2.isPresent();
 }
 
 bool GamePairs::validChoice(const Card& card1, const Card& card2) const

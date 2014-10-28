@@ -8,6 +8,17 @@
 typedef int keyidentifier;
 typedef std::pair<GLfloat, GLfloat> point;
 
+enum GameState
+{
+    STATE_NOT_SPECIFIED,
+    STATE_BEGIN,
+    STATE_SHOW_BOARD,
+    STATE_TAKE_CARD_FIRST,
+    STATE_TAKE_CARD_SECOND,
+    STATE_TWO_CARDS_CHOSEN,
+    STATE_END
+};
+
 class GamePairsOpenGLDisplay : public GamePairsDisplay
 {
 public:
@@ -25,13 +36,19 @@ public:
 
     static GamePairsOpenGLDisplay *lastDisplayForCallback;
 
+    void close();
+
 private:
-    void refreshView();
+    GameState state = STATE_NOT_SPECIFIED;
 
     void initializeGLFW();
     void openWindowAndCreateItsContext();
     void initializeGLEW();
+
     void initializeBuffers();
+    void refreshView();
+    void cleanBuffers();
+
     void setKeyCallback();
     void setBackgroundColor();
     void setProgramIdWithCompilingShaders();
@@ -48,16 +65,13 @@ private:
 
     void initialize();
     void cleanupGL();
+    bool shouldWindowExit();
 
-    static const std::string konVertexShaderCode;
-    static const std::string konFragmentShaderCode;
     static const std::string simpleVertexShaderCode;
     static const std::string simpleFragmentShaderCode;
 
     static void keyCallback(GLFWwindow* w, keyidentifier key, int scancode, int action, int mods);
     static bool keyIsOneOfArrowKeys(keyidentifier key);
-
-    unsigned int rectanglesToDraw = 0;
 
     std::vector<GLfloat> rectanglesVerticesPositions;
     std::vector<GLfloat> rectanglesVerticesColors;
@@ -79,6 +93,7 @@ private:
     unsigned int cursorY = 0;
 
     void applyCursorPosition();
+    bool justChoseCard = false;
     void updateCursorPosition(keyidentifier key);
 };
 

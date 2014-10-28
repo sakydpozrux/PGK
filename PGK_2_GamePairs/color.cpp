@@ -19,6 +19,12 @@ bool Color::isSameColorAs(const Color& color) const
     return r == color.r && g == color.g && b == color.b;
 }
 
+Color Color::gray()
+{
+    const float grayness = 0.15f;
+    return Color(grayness, grayness, grayness);
+}
+
 std::list<Color> Color::frequentColorsNames()
 {
     std::list<Color> frequentColorsNames;

@@ -1,9 +1,9 @@
 #include "gamepairsopengldisplay.hpp"
 #include "shaders.hpp"
 #include "exception"
-#include <iostream>
-#include <GL/glew.h>
+#include <iostream> //TODO: Remove this include when possible
 
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 using namespace glm;
 
@@ -53,12 +53,9 @@ GamePairsOpenGLDisplay::GamePairsOpenGLDisplay(unsigned int aWidth, unsigned int
 void GamePairsOpenGLDisplay::gameBegin()
 {
     initialize();
+    state = STATE_BEGIN;
 
-    do {
-        refreshView();
-        glfwPollEvents();
-    } while(glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS
-            && glfwWindowShouldClose(window) == 0 );
+    refreshView();
 }
 
 void GamePairsOpenGLDisplay::setKeyCallback()
@@ -94,33 +91,66 @@ void GamePairsOpenGLDisplay::initialize()
 
 void GamePairsOpenGLDisplay::showRound(const unsigned int round)
 {
-    // TODO
+    state = STATE_SHOW_BOARD;
+    std::cout << "ROUND: " << round << std::endl;
 }
 
 void GamePairsOpenGLDisplay::showBoard()
 {
+    constructRectanglesVectors();
     refreshView();
 }
 
 Card& GamePairsOpenGLDisplay::letUserChooseCard(std::vector<Card>& cards)
 {
-    //return &(new Card(RED));
+    state = (state == STATE_TAKE_CARD_FIRST) ? STATE_TAKE_CARD_SECOND
+                                             : STATE_TAKE_CARD_FIRST;
+
+    if (state == STATE_TAKE_CARD_SECOND)
+    {
+        Card& selectedCard = cards[cursorY * board->horizontalSize + cursorX];
+        selectedCard.setVisible(true);
+    }
+
+    do {
+        constructRectanglesVectors();
+        refreshView();
+        glfwPollEvents();
+    } while (!justChoseCard && !shouldWindowExit());
+
+    justChoseCard = false;
+
+    if (state == STATE_TAKE_CARD_SECOND)
+        state = STATE_TWO_CARDS_CHOSEN;
+
+    Card& selectedCard = cards[cursorY * board->horizontalSize + cursorX];
+
+    return selectedCard;
 }
 
 void GamePairsOpenGLDisplay::showCurrentPlayerSuccess()
 {
+    std::cout << "SUCCESS" << std::endl;
 }
 
 void GamePairsOpenGLDisplay::showCurrentPlayerFail()
 {
+    std::cout << "FAIL" << std::endl;
 }
 
 void GamePairsOpenGLDisplay::showScore()
 {
+    std::cout << "SCORE: " << player->score << std::endl;
 }
 
 void GamePairsOpenGLDisplay::gameEnd()
 {
+    constructRectanglesVectors();
+    do {
+        refreshView();
+        glfwPollEvents();
+    } while(!shouldWindowExit());
+
     cleanupGL();
 }
 
@@ -180,6 +210,7 @@ void GamePairsOpenGLDisplay::initializeBuffers()
 
 void GamePairsOpenGLDisplay::refreshView()
 {
+    initializeBuffers();
     lastDisplayForCallback = this;
 
     glUseProgram(programID);
@@ -235,6 +266,9 @@ void GamePairsOpenGLDisplay::keyCallback(GLFWwindow*, keyidentifier key, int, in
     if (action == GLFW_RELEASE)
         return;
 
+    if (key == GLFW_KEY_ESCAPE)
+        lastDisplayForCallback->close();
+
     if (key == GLFW_KEY_SPACE)
         lastDisplayForCallback->applyCursorPosition();
 
@@ -246,7 +280,9 @@ void GamePairsOpenGLDisplay::keyCallback(GLFWwindow*, keyidentifier key, int, in
 
 void GamePairsOpenGLDisplay::applyCursorPosition()
 {
-    // TODO
+    Card& card = (board->cards)[cursorY * board->horizontalSize + cursorX];
+    if (card.isPresent())
+        justChoseCard = true;
 }
 
 void GamePairsOpenGLDisplay::updateCursorPosition(keyidentifier key)
@@ -274,14 +310,17 @@ void GamePairsOpenGLDisplay::updateCursorPosition(keyidentifier key)
 
 bool GamePairsOpenGLDisplay::keyIsOneOfArrowKeys(keyidentifier key)
 {
-    return key == GLFW_KEY_UP || key == GLFW_KEY_DOWN || key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT;
+    return key == GLFW_KEY_UP
+        || key == GLFW_KEY_DOWN
+        || key == GLFW_KEY_LEFT
+        || key == GLFW_KEY_RIGHT;
 }
 
 void GamePairsOpenGLDisplay::constructRectanglesVectors()
 {
     rectanglesVerticesPositions.clear();
     rectanglesVerticesColors.clear();
-    rectanglesToDraw = 0;
+
     const std::vector<std::vector<Card> >& cards = board->cardsInRows();
 
     for (unsigned int y = 0; y < board->verticalSize; ++y)
@@ -294,8 +333,12 @@ void GamePairsOpenGLDisplay::drawCardIfPresent(int x, int y, const Card& card)
     if (!card.isPresent())
         return;
 
-    rectanglesToDraw++;
-    drawCard(x, y, card.color);
+    Color color = card.isVisible() ? card.color : Color::gray();
+
+    if (x == cursorX && y == cursorY)
+        color = Color(color, 0.3f);
+
+    drawCard(x, y, color);
 }
 
 void GamePairsOpenGLDisplay::drawCard(int x, int y, const Color& color)
@@ -337,4 +380,15 @@ void GamePairsOpenGLDisplay::drawRectangle(const point& origin, const point& siz
 void GamePairsOpenGLDisplay::drawSymbol(const point& origin, const point& size, const Color& color)
 {
     // TODO
+}
+
+bool GamePairsOpenGLDisplay::shouldWindowExit()
+{
+    return glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS
+            || glfwWindowShouldClose(window) != 0;
+}
+
+void GamePairsOpenGLDisplay::close()
+{
+    exit(0);
 }

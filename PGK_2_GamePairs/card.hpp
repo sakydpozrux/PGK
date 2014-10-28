@@ -25,7 +25,7 @@ public:
     Color color;
     unsigned int uniqueId;
 
-    CardVisibility visibility = CARD_VISIBLE;
+    CardVisibility visibility = CARD_HIDDEN;
     bool isVisible() const;
     bool isPresent() const;
     void setVisible(bool shouldBeVisible);
