@@ -104,6 +104,7 @@ private:
     unsigned int cursorX = 0;
     unsigned int cursorY = 0;
 
+    Card& currentCard(std::vector<Card>& cards);
     void applyCursorPosition();
     bool justChoseCard = false;
     void updateCursorPosition(keyidentifier key);

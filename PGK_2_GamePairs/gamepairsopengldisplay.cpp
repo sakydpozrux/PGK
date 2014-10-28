@@ -89,7 +89,7 @@ Card& GamePairsOpenGLDisplay::letUserChooseCard(std::vector<Card>& cards)
 
     if (state == STATE_TAKE_CARD_SECOND)
     {
-        Card& selectedCard = cards[cursorY * board->horizontalSize + cursorX];
+        Card& selectedCard = currentCard(cards);
         selectedCard.setVisible(true);
     }
 
@@ -104,7 +104,7 @@ Card& GamePairsOpenGLDisplay::letUserChooseCard(std::vector<Card>& cards)
     if (state == STATE_TAKE_CARD_SECOND)
         state = STATE_TWO_CARDS_CHOSEN;
 
-    Card& selectedCard = cards[cursorY * board->horizontalSize + cursorX];
+    Card& selectedCard = currentCard(cards);
 
     return selectedCard;
 }
@@ -252,6 +252,11 @@ void GamePairsOpenGLDisplay::keyCallback(GLFWwindow*, keyidentifier key, int, in
         lastDisplayForCallback->updateCursorPosition(key);
 
     lastDisplayForCallback->refreshView();
+}
+
+Card& GamePairsOpenGLDisplay::currentCard(std::vector<Card>& cards)
+{
+    return cards[cursorY * board->horizontalSize + cursorX];
 }
 
 void GamePairsOpenGLDisplay::applyCursorPosition()

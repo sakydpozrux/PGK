@@ -1,4 +1,4 @@
-#include "gamepairs.hpp"
+﻿#include "gamepairs.hpp"
 #include <chrono>
 #include <thread>
 
@@ -24,8 +24,13 @@ void GamePairs::mainGameLoop()
     displayDelegate->showRound(round);
     displayDelegate->showBoard();
 
-    if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
-                     displayDelegate->letUserChooseCard(cards())))
+    Card& cardFirst  = displayDelegate->letUserChooseCard(cards());
+    Card& cardSecond = displayDelegate->letUserChooseCard(cards());
+
+    if (cardFirst.isSameCard(cardSecond))
+        return cancelSelection(cardFirst, cardSecond);
+
+    if (tryTakeCards(cardFirst, cardSecond))
     {
         displayDelegate->showCurrentPlayerSuccess();
     } else {
@@ -68,6 +73,12 @@ std::vector<Card> GamePairs::frequentCards()
     return frequentCards;
 }
 
+void GamePairs::cancelSelection(Card& cardFirst, Card& cardSecond)
+{
+    cardFirst.setVisible(false);
+    cardSecond.setVisible(false);
+}
+
 inline void GamePairs::nextRound()
 {
     ++round;
@@ -80,9 +91,7 @@ bool GamePairs::tryTakeCards(Card& card1, Card& card2)
     displayDelegate->showBoard();
 
     std::this_thread::sleep_for(kPauseDuration);
-
-    card1.setVisible(false);
-    card2.setVisible(false);
+    cancelSelection(card1, card2);
 
     if (!validChoice(card1, card2))
         return false;

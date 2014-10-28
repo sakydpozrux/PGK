@@ -31,8 +31,10 @@ public:
   GamePairsDisplay *displayDelegate;
 
   void mainGameLoop();
-protected:
+  protected:
   void nextRound();
+
+  void cancelSelection(Card& cardFirst, Card& cardSecond);
   bool tryTakeCards(Card& card1, Card& card2);
 
   bool cardsArePresent(const Card& card1, const Card& card2) const;
