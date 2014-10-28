@@ -72,7 +72,7 @@ void GamePairsOpenGLDisplay::initialize()
 void GamePairsOpenGLDisplay::showRound(const unsigned int round)
 {
     state = STATE_SHOW_BOARD;
-    failsCounter = round;
+    failsCounter = round - 1;
     std::cout << "ROUND: " << round << std::endl;
 }
 
@@ -357,7 +357,7 @@ void GamePairsOpenGLDisplay::drawFailBox(unsigned int i)
 
 float GamePairsOpenGLDisplay::failBoxOriginY(unsigned int i)
 {
-    static const float DISTANCE_FROM_BOTTOM = -1.0f + DISTANCE_BETWEEN_CARDS * FAILBOX_HEIGHT;
+    static const float DISTANCE_FROM_BOTTOM = -1.0f + DISTANCE_BETWEEN_CARDS + FAILBOX_HEIGHT;
 
     return DISTANCE_FROM_BOTTOM + i * (FAILBOX_HEIGHT + DISTANCE_BETWEEN_FAILBOXES);
 }
