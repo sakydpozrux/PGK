@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 typedef int keyidentifier;
+typedef std::pair<GLfloat, GLfloat> point;
 
 class GamePairsOpenGLDisplay : public GamePairsDisplay
 {
@@ -22,15 +23,19 @@ public:
     void showScore();
     void gameEnd();
 
+    static GamePairsOpenGLDisplay *lastDisplayForCallback;
+
+private:
+    void refreshView();
+
     void initializeGLFW();
     void openWindowAndCreateItsContext();
     void initializeGLEW();
-    void doSomethingFunny();
+    void initializeBuffers();
     void setKeyCallback();
     void setBackgroundColor();
     void setProgramIdWithCompilingShaders();
 
-private:
     unsigned int width;
     unsigned int height;
 
@@ -39,6 +44,7 @@ private:
 
     GLuint *VertexArrayID;
     GLuint *vertexbuffer;
+    GLuint *colorbuffer;
 
     void initialize();
     void cleanupGL();
@@ -50,6 +56,30 @@ private:
 
     static void keyCallback(GLFWwindow* w, keyidentifier key, int scancode, int action, int mods);
     static bool keyIsOneOfArrowKeys(keyidentifier key);
+
+    unsigned int rectanglesToDraw = 0;
+
+    std::vector<GLfloat> rectanglesVerticesPositions;
+    std::vector<GLfloat> rectanglesVerticesColors;
+
+    void constructRectanglesVectors();
+    void pushColoredPoint(const point& p,
+                          const Color& color);
+    void drawCardIfPresent(int x, int y, const Card& card);
+    void drawCard(int x, int y, const Color& color);
+
+    void drawRectangle(const point& origin,
+                       const point& size,
+                       const Color& color);
+    void drawSymbol(const point& origin,
+                    const point& size,
+                    const Color& color);
+
+    unsigned int cursorX = 0;
+    unsigned int cursorY = 0;
+
+    void applyCursorPosition();
+    void updateCursorPosition(keyidentifier key);
 };
 
 #endif // GAMEPAIRSOPENGLDISPLAY_HPP

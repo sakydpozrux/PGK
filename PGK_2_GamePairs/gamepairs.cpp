@@ -18,8 +18,8 @@ void GamePairs::mainGameLoop()
 {
     displayDelegate->showRound(round);
 
-    if (tryTakeCards(displayDelegate->letUserChooseCard(cards()),
-                     displayDelegate->letUserChooseCard(cards())))
+    if (true)//tryTakeCards(displayDelegate->letUserChooseCard(cards()),
+             //        displayDelegate->letUserChooseCard(cards())))
     {
         displayDelegate->showCurrentPlayerSuccess();
     } else {
@@ -32,7 +32,7 @@ void GamePairs::play()
 {
     displayDelegate->gameBegin();
 
-    while (board.enoughCardsForNextRound())
+    //while (board.enoughCardsForNextRound())
         mainGameLoop();
 
     displayDelegate->showScore();
@@ -72,9 +72,11 @@ bool GamePairs::tryTakeCards(Card& card1, Card& card2)
 
     player.incrementScore();
 
-    card1.setVisible();
-    card2.setVisible();
+    card1.setVisible(true);
+    card2.setVisible(true);
     board.decreaseVisibleCardsCounter();
+    card1.removeFromBoard();
+    card2.removeFromBoard();
 
     return true;
 }

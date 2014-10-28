@@ -2,7 +2,7 @@
 #include "gamepairsopengldisplay.hpp"
 #include "gamepairstextdisplay.hpp"
 
-#define DISPLAY_GL 1
+#define DISPLAY_GL true
 
 int main()
 {

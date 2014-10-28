@@ -18,6 +18,8 @@ public:
     Color(const Color& color);
     Color(const FrequentColor colorName);
 
+    Color(const Color& color, float darkness);
+
     bool isSameColorAs(const Color& color) const;
 
     static std::list<Color> frequentColorsNames();

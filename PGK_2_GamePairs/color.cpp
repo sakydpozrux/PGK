@@ -9,6 +9,11 @@ Color::Color(const Color& color)
 Color::Color(const FrequentColor colorName)
     : Color(frequentColors().at(colorName)) {}
 
+Color::Color(const Color& color, float darkness)
+    : Color(color.r + darkness,
+            color.g + darkness,
+            color.b + darkness) {}
+
 bool Color::isSameColorAs(const Color& color) const
 {
     return r == color.r && g == color.g && b == color.b;
@@ -28,13 +33,13 @@ std::map<FrequentColor, Color> Color::frequentColors()
 {
     static const std::map<FrequentColor, Color> colors =
     {
-        { RED    , Color(1.00f, 0.00f, 0.00f) },
-        { YELLOW , Color(1.00f, 1.00f, 0.00f) },
-        { GREEN  , Color(0.00f, 1.00f, 0.00f) },
-        { BLUE   , Color(0.00f, 0.00f, 1.00f) },
-        { PURPLE , Color(0.61f, 0.19f, 1.00f) },
+        { RED    , Color(0.90f, 0.00f, 0.00f) },
+        { YELLOW , Color(0.90f, 0.90f, 0.00f) },
+        { GREEN  , Color(0.00f, 0.90f, 0.00f) },
+        { BLUE   , Color(0.00f, 0.00f, 0.90f) },
+        { PURPLE , Color(0.61f, 0.19f, 0.90f) },
         { BLACK  , Color(0.00f, 0.00f, 0.00f) },
-        { WHITE  , Color(1.00f, 1.00f, 1.00f) },
+        { WHITE  , Color(0.90f, 0.90f, 0.90f) },
         { ORANGE , Color(0.89f, 0.47f, 0.20f) }
     };
 

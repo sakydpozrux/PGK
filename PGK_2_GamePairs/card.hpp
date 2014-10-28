@@ -3,6 +3,13 @@
 
 #include "color.hpp"
 
+enum CardVisibility
+{
+    CARD_VISIBLE,
+    CARD_HIDDEN,
+    CARD_NOT_PRESENT
+};
+
 class Card
 {
 public:
@@ -18,15 +25,17 @@ public:
     Color color;
     unsigned int uniqueId;
 
+    CardVisibility visibility = CARD_VISIBLE;
     bool isVisible() const;
-    void setVisible();
+    bool isPresent() const;
+    void setVisible(bool shouldBeVisible);
+    void removeFromBoard();
 
     static unsigned int lastUniqueId;
 
 private:
     static std::string notPresentString();
     std::string presentString() const;
-    bool colorVisibleOnBoard = true;
 };
 
 #endif // CARD_HPP

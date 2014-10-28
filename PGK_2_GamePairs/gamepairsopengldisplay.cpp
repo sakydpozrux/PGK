@@ -7,50 +7,11 @@
 #include <glm/glm.hpp>
 using namespace glm;
 
-// REFACTOR: Do something with these ugly const strings. Even QtCreator doesn't correctly parse it. :D
-// BEGIN
-const std::string GamePairsOpenGLDisplay::konVertexShaderCode =
-R"sourceCode(
-#version 330 core
+const float DISTANCE_BETWEEN_CARDS = 0.04f;
+const float CARD_WIDTH  = 0.350f;
+const float CARD_HEIGHT = 0.450f;
 
-// Ouput data
-out vec3 color;
-
-uniform float red;
-uniform float green;
-uniform float blue;
-void main()
-{
-
-    // Output color = red
-    color = vec3(red,green,blue);
-
-}
-)sourceCode";
-// END
-
-
-// REFACTOR: Same here.
-// BEGIN
-const std::string GamePairsOpenGLDisplay::konFragmentShaderCode =
-R"sourceCode(
-#version 330 core
-
-// Ouput data
-out vec3 color;
-
-uniform float red;
-uniform float green;
-uniform float blue;
-void main()
-{
-
-    // Output color = red
-    color = vec3(red,green,blue);
-
-}
-)sourceCode";
-// END
+GamePairsOpenGLDisplay *GamePairsOpenGLDisplay::lastDisplayForCallback = nullptr;
 
 // REFACTOR: Do something with these ugly const strings. Even QtCreator doesn't correctly parse it. :D
 // BEGIN
@@ -92,14 +53,17 @@ GamePairsOpenGLDisplay::GamePairsOpenGLDisplay(unsigned int aWidth, unsigned int
 void GamePairsOpenGLDisplay::gameBegin()
 {
     initialize();
-    doSomethingFunny();
+
+    do {
+        refreshView();
+        glfwPollEvents();
+    } while(glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS
+            && glfwWindowShouldClose(window) == 0 );
 }
 
 void GamePairsOpenGLDisplay::setKeyCallback()
 {
     glfwSetKeyCallback(window, keyCallback);
-
-    // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 }
 
@@ -122,31 +86,20 @@ void GamePairsOpenGLDisplay::initialize()
     setKeyCallback();
     setBackgroundColor();
 
-    VertexArrayID = new GLuint();
-    glGenVertexArrays(1, VertexArrayID);
-    glBindVertexArray(*VertexArrayID);
-
-    vertexbuffer = new GLuint();
-    glGenBuffers(1, vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, *vertexbuffer);
-
-    static const GLfloat g_vertex_buffer_data[] = {
-        0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
-       -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
-    };
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    constructRectanglesVectors();
 
     setProgramIdWithCompilingShaders();
+    initializeBuffers();
 }
 
 void GamePairsOpenGLDisplay::showRound(const unsigned int round)
 {
+    // TODO
 }
 
 void GamePairsOpenGLDisplay::showBoard()
 {
+    refreshView();
 }
 
 Card& GamePairsOpenGLDisplay::letUserChooseCard(std::vector<Card>& cards)
@@ -173,9 +126,8 @@ void GamePairsOpenGLDisplay::gameEnd()
 
 void GamePairsOpenGLDisplay::initializeGLFW()
 {
-    if(!glfwInit()) {
+    if(!glfwInit())
         throw std::runtime_error(std::string("Failed to initialize GLFW\n"));
-    }
 
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -197,94 +149,192 @@ void GamePairsOpenGLDisplay::openWindowAndCreateItsContext()
 
 void GamePairsOpenGLDisplay::initializeGLEW()
 {
-    glewExperimental = true; // Needed for core profile
+    glewExperimental = true;
 
     if (glewInit() != GLEW_OK)
         throw std::runtime_error(std::string("Failed to initialize GLEW\n"));
 }
 
-// TODO: Refactor method below. Extract it to smaller functions.
-void GamePairsOpenGLDisplay::doSomethingFunny()
+void GamePairsOpenGLDisplay::initializeBuffers()
 {
-    do {
-        // Clear the screen
-        glClear(GL_COLOR_BUFFER_BIT);
+    VertexArrayID = new GLuint();
+    glGenVertexArrays(1, VertexArrayID);
+    glBindVertexArray(*VertexArrayID);
 
-        // Use our shader
-        glUseProgram(programID);
+    vertexbuffer = new GLuint();
+    glGenBuffers(1, vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, *vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER,
+                 rectanglesVerticesPositions.size() * sizeof(GLfloat),
+                 rectanglesVerticesPositions.data(),
+                 GL_STATIC_DRAW);
 
-        // 1rst attribute buffer : vertices
-        GLint posAttrib = glGetAttribLocation(programID, "position");
-        glEnableVertexAttribArray(posAttrib);
-        glBindBuffer(GL_ARRAY_BUFFER, *vertexbuffer);
-        glVertexAttribPointer(
-            posAttrib,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-            2,                  // size
-            GL_FLOAT,           // type
-            GL_FALSE,           // normalized?
-            5 * sizeof(float),  // stride
-            (void*)0            // array buffer offset
-        );
+    colorbuffer = new GLuint();
+    glGenBuffers(1, colorbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, *colorbuffer);
+    glBufferData(GL_ARRAY_BUFFER,
+                 rectanglesVerticesColors.size() * sizeof(GLfloat),
+                 rectanglesVerticesColors.data(),
+                 GL_STATIC_DRAW);
+}
 
-        GLint colAttrib = glGetAttribLocation(programID, "color");
-        glEnableVertexAttribArray(colAttrib);
-        glVertexAttribPointer(
-            colAttrib, // position of color attribute
-            3, // rgb)
-            GL_FLOAT,
-            GL_FALSE, //normalized?
-            5 * sizeof(float),
-            (void*)(2 * sizeof(float)) // offset
-       );
+void GamePairsOpenGLDisplay::refreshView()
+{
+    lastDisplayForCallback = this;
 
-        // Draw the triangle !
-        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+    glUseProgram(programID);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-        glDisableVertexAttribArray(programID);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, *vertexbuffer);
+    glVertexAttribPointer(
+                0,
+                2,
+                GL_FLOAT,
+                GL_FALSE,
+                0,
+                (void*)0
+    );
 
-        // Swap buffers
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, *colorbuffer);
+    glVertexAttribPointer(
+                1,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                0,
+                (void*)0
+   );
 
-    } // Check if the ESC key was pressed or the window was closed
-    while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0 );
+    glDrawArrays(GL_TRIANGLES,
+                 0,
+                 rectanglesVerticesPositions.size() * sizeof(GLfloat));
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+
+    glfwSwapBuffers(window);
 }
 
 void GamePairsOpenGLDisplay::cleanupGL()
 {
-    // Cleanup VBO
     glDeleteBuffers(1, vertexbuffer);
     glDeleteVertexArrays(1, VertexArrayID);
     glDeleteProgram(programID);
 
     delete VertexArrayID;
     delete vertexbuffer;
+    delete colorbuffer;
 
-    // Close OpenGL window and terminate GLFW
     glfwTerminate();
 }
 
-void GamePairsOpenGLDisplay::keyCallback(GLFWwindow*, keyidentifier key, int scancode, int action, int mods)
+void GamePairsOpenGLDisplay::keyCallback(GLFWwindow*, keyidentifier key, int, int action, int)
 {
-    std::cout << "keyCallback(..., int key = " << key
-              << ", int scancode = " << scancode
-              << ", int action = " << action
-              << ", int mods = " << mods << ")" << std::endl;
-
-    // Don't do anything if key is releasing
     if (action == GLFW_RELEASE)
         return;
 
-    if (keyIsOneOfArrowKeys(key))
-        return; // TODO updateCursorPosition;
-
     if (key == GLFW_KEY_SPACE)
-        return; // TODO applyCursorPosition;
+        lastDisplayForCallback->applyCursorPosition();
 
+    if (keyIsOneOfArrowKeys(key))
+        lastDisplayForCallback->updateCursorPosition(key);
+
+    lastDisplayForCallback->refreshView();
+}
+
+void GamePairsOpenGLDisplay::applyCursorPosition()
+{
+    // TODO
+}
+
+void GamePairsOpenGLDisplay::updateCursorPosition(keyidentifier key)
+{
+    const unsigned int horizontalSize = board->horizontalSize;
+    const unsigned int verticalSize   = board->verticalSize;
+
+    switch (key) {
+    case GLFW_KEY_UP:
+        cursorY = (cursorY - 1) % verticalSize;
+        break;
+    case GLFW_KEY_DOWN:
+        cursorY = (cursorY + 1) % verticalSize;
+        break;
+    case GLFW_KEY_LEFT:
+        cursorX = (cursorX - 1) % horizontalSize;
+        break;
+    default: // GLFW_KEY_RIGHT
+        cursorX = (cursorX + 1) % horizontalSize;
+        break;
+    }
+
+    std::cout << "Cursor position: (" << cursorX << ", " << cursorY << ")" << std::endl;
 }
 
 bool GamePairsOpenGLDisplay::keyIsOneOfArrowKeys(keyidentifier key)
 {
-    return (key == GLFW_KEY_UP || key == GLFW_KEY_DOWN || key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT);
+    return key == GLFW_KEY_UP || key == GLFW_KEY_DOWN || key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT;
+}
+
+void GamePairsOpenGLDisplay::constructRectanglesVectors()
+{
+    rectanglesVerticesPositions.clear();
+    rectanglesVerticesColors.clear();
+    rectanglesToDraw = 0;
+    const std::vector<std::vector<Card> >& cards = board->cardsInRows();
+
+    for (unsigned int y = 0; y < board->verticalSize; ++y)
+        for (unsigned int x = 0; x < board->horizontalSize; ++x)
+            drawCardIfPresent(x, y, cards[y][x]);
+}
+
+void GamePairsOpenGLDisplay::drawCardIfPresent(int x, int y, const Card& card)
+{
+    if (!card.isPresent())
+        return;
+
+    rectanglesToDraw++;
+    drawCard(x, y, card.color);
+}
+
+void GamePairsOpenGLDisplay::drawCard(int x, int y, const Color& color)
+{
+    point origin(-1.0f + (x+1) * DISTANCE_BETWEEN_CARDS + x * CARD_WIDTH,
+                  1.0f - (y+1) * DISTANCE_BETWEEN_CARDS - y * CARD_HEIGHT);
+    point size(CARD_WIDTH, CARD_HEIGHT);
+
+    drawRectangle(origin, size, color);
+    drawSymbol(origin, size, color);
+}
+
+void GamePairsOpenGLDisplay::pushColoredPoint(const point& p,
+                                              const Color& color)
+{
+    rectanglesVerticesPositions.push_back(p.first);
+    rectanglesVerticesPositions.push_back(p.second);
+
+    rectanglesVerticesColors.push_back(static_cast<GLfloat>(color.r));
+    rectanglesVerticesColors.push_back(static_cast<GLfloat>(color.g));
+    rectanglesVerticesColors.push_back(static_cast<GLfloat>(color.b));
+}
+
+void GamePairsOpenGLDisplay::drawRectangle(const point& origin, const point& size, const Color& color)
+{
+    point upLeft = origin;
+    point downLeft(origin.first, origin.second - size.second);
+    point downRight(origin.first + size.first, downLeft.second);
+    point upRight(downRight.first, origin.second);
+
+    pushColoredPoint(upLeft,    color);
+    pushColoredPoint(downLeft,  Color(color, -0.1f));
+    pushColoredPoint(downRight, Color(color,  0.05f));
+    pushColoredPoint(downRight, Color(color,  0.15f));
+    pushColoredPoint(upRight,   Color(color,  0.3f));
+    pushColoredPoint(upLeft,    color);
+}
+
+void GamePairsOpenGLDisplay::drawSymbol(const point& origin, const point& size, const Color& color)
+{
+    // TODO
 }

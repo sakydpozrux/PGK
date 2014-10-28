@@ -23,6 +23,7 @@ void Board::decreaseVisibleCardsCounter()
 
 void Board::shuffle()
 {
+    srand(unsigned(time(NULL)));
     std::random_shuffle(cards.begin(), cards.end());
 }
 
