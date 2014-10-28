@@ -40,6 +40,7 @@ public:
 
 private:
     GameState state = STATE_NOT_SPECIFIED;
+    unsigned int failsCounter = 0;
 
     void initializeGLFW();
     void openWindowAndCreateItsContext();
@@ -77,10 +78,21 @@ private:
     std::vector<GLfloat> rectanglesVerticesColors;
 
     void constructRectanglesVectors();
+    void constructCards();
+    void constructFailBoxes();
+
     void pushColoredPoint(const point& p,
                           const Color& color);
-    void drawCardIfPresent(int x, int y, const Card& card);
-    void drawCard(int x, int y, const Color& color);
+    bool isCurrentCursorPosition(unsigned int x, unsigned int y);
+    void drawCardIfPresent(unsigned int x,
+                           unsigned int y,
+                           const Card& card);
+    void drawCard(unsigned int x,
+                  unsigned int y,
+                  const Color& color);
+
+    void drawFailBox(unsigned int i);
+    float failBoxOriginY(unsigned int i);
 
     void drawRectangle(const point& origin,
                        const point& size,

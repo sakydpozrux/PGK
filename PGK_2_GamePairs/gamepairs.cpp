@@ -3,6 +3,7 @@
 #include <thread>
 
 const std::chrono::milliseconds kPauseDuration(500);
+const std::chrono::milliseconds kBeforeQuitDuration(5000);
 
 GamePairs::GamePairs(std::string playerName,
                      GamePairsDisplay *aDisplayDelegate,
@@ -41,6 +42,8 @@ void GamePairs::play()
         mainGameLoop();
 
     displayDelegate->showScore();
+
+    std::this_thread::sleep_for(kBeforeQuitDuration);
     displayDelegate->gameEnd();
 }
 

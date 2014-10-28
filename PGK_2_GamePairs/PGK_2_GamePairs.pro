@@ -27,4 +27,5 @@ HEADERS += \
     gamepairsdisplay.hpp \
     gamepairstextdisplay.hpp \
     gamepairsopengldisplay.hpp \
-    shaders.hpp
+    shaders.hpp \
+    shaderssourcecodes.hpp

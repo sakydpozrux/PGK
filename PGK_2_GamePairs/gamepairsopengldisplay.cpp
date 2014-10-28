@@ -1,7 +1,8 @@
 #include "gamepairsopengldisplay.hpp"
 #include "shaders.hpp"
+#include "shaderssourcecodes.hpp"
 #include "exception"
-#include <iostream> //TODO: Remove this include when possible
+#include <iostream>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -10,42 +11,18 @@ using namespace glm;
 const float DISTANCE_BETWEEN_CARDS = 0.04f;
 const float CARD_WIDTH  = 0.350f;
 const float CARD_HEIGHT = 0.450f;
+const point CARD_SIZE(CARD_WIDTH, CARD_HEIGHT);
+
+const float DISTANCE_BETWEEN_FAILBOXES = DISTANCE_BETWEEN_CARDS / 2.0f;
+const float FAILBOX_WIDTH  = 2.0f - (6.0f * DISTANCE_BETWEEN_CARDS + 4.0f * CARD_WIDTH);
+const float FAILBOX_HEIGHT = DISTANCE_BETWEEN_CARDS;
+const float FAILBOX_ORIGIN_X = 1.0f - (DISTANCE_BETWEEN_CARDS + FAILBOX_WIDTH);
+const point FAILBOX_SIZE(FAILBOX_WIDTH, FAILBOX_HEIGHT);
+const Color FAILBOX_COLOR(RED);
+
+const Color BACKGROUND_COLOR(0.1f, 0.1f, 0.2f);
 
 GamePairsOpenGLDisplay *GamePairsOpenGLDisplay::lastDisplayForCallback = nullptr;
-
-// REFACTOR: Do something with these ugly const strings. Even QtCreator doesn't correctly parse it. :D
-// BEGIN
-const std::string GamePairsOpenGLDisplay::simpleVertexShaderCode =
-R"sourceCode(
-#version 330 core
-
-in vec2 position;
-in vec3 color;
-
-out vec3 Color;
-void main()
-{
-    gl_Position = vec4(position, 0.0, 1.0);
-    Color = color;
-}
-)sourceCode";
-// END
-
-
-// REFACTOR: Same here.
-// BEGIN
-const std::string GamePairsOpenGLDisplay::simpleFragmentShaderCode =
-R"sourceCode(
-#version 330 core
-
-in vec3 Color;
-out vec4 color;
-void main()
-{
-    color = vec4(Color, 1.0);
-}
-)sourceCode";
-// END
 
 GamePairsOpenGLDisplay::GamePairsOpenGLDisplay(unsigned int aWidth, unsigned int aHeight)
     : GamePairsDisplay(), width(aWidth), height(aHeight) {}
@@ -66,7 +43,10 @@ void GamePairsOpenGLDisplay::setKeyCallback()
 
 void GamePairsOpenGLDisplay::setBackgroundColor()
 {
-    glClearColor(0.1f, 0.1f, 0.2f, 0.0f);
+    glClearColor(BACKGROUND_COLOR.r,
+                 BACKGROUND_COLOR.g,
+                 BACKGROUND_COLOR.b,
+                 0.0f);
 }
 
 void GamePairsOpenGLDisplay::setProgramIdWithCompilingShaders()
@@ -92,6 +72,7 @@ void GamePairsOpenGLDisplay::initialize()
 void GamePairsOpenGLDisplay::showRound(const unsigned int round)
 {
     state = STATE_SHOW_BOARD;
+    failsCounter = round;
     std::cout << "ROUND: " << round << std::endl;
 }
 
@@ -145,12 +126,7 @@ void GamePairsOpenGLDisplay::showScore()
 
 void GamePairsOpenGLDisplay::gameEnd()
 {
-    constructRectanglesVectors();
-    do {
-        refreshView();
-        glfwPollEvents();
-    } while(!shouldWindowExit());
-
+    state = STATE_END;
     cleanupGL();
 }
 
@@ -316,11 +292,8 @@ bool GamePairsOpenGLDisplay::keyIsOneOfArrowKeys(keyidentifier key)
         || key == GLFW_KEY_RIGHT;
 }
 
-void GamePairsOpenGLDisplay::constructRectanglesVectors()
+void GamePairsOpenGLDisplay::constructCards()
 {
-    rectanglesVerticesPositions.clear();
-    rectanglesVerticesColors.clear();
-
     const std::vector<std::vector<Card> >& cards = board->cardsInRows();
 
     for (unsigned int y = 0; y < board->verticalSize; ++y)
@@ -328,27 +301,65 @@ void GamePairsOpenGLDisplay::constructRectanglesVectors()
             drawCardIfPresent(x, y, cards[y][x]);
 }
 
-void GamePairsOpenGLDisplay::drawCardIfPresent(int x, int y, const Card& card)
+void GamePairsOpenGLDisplay::constructFailBoxes()
 {
-    if (!card.isPresent())
-        return;
+    for (unsigned int i = 0; i < failsCounter; ++i)
+        drawFailBox(i);
+}
 
-    Color color = card.isVisible() ? card.color : Color::gray();
+void GamePairsOpenGLDisplay::constructRectanglesVectors()
+{
+    rectanglesVerticesPositions.clear();
+    rectanglesVerticesColors.clear();
 
-    if (x == cursorX && y == cursorY)
-        color = Color(color, 0.3f);
+    constructCards();
+    constructFailBoxes();
+}
+
+void GamePairsOpenGLDisplay::drawCardIfPresent(unsigned int x,
+                                               unsigned int y,
+                                               const Card& card)
+{
+    if (card.isVisible())
+        return drawCard(x, y, card.color);
+
+    Color color = card.isPresent() ? Color::gray() : BACKGROUND_COLOR;
+
+    const float shine = 0.3f;
+    if (isCurrentCursorPosition(x, y))
+        color = Color(color, shine);
 
     drawCard(x, y, color);
 }
 
-void GamePairsOpenGLDisplay::drawCard(int x, int y, const Color& color)
+bool GamePairsOpenGLDisplay::isCurrentCursorPosition(unsigned int x, unsigned int y)
+{
+    return x == cursorX && y == cursorY;
+}
+
+void GamePairsOpenGLDisplay::drawCard(unsigned int x,
+                                      unsigned int y,
+                                      const Color& color)
 {
     point origin(-1.0f + (x+1) * DISTANCE_BETWEEN_CARDS + x * CARD_WIDTH,
                   1.0f - (y+1) * DISTANCE_BETWEEN_CARDS - y * CARD_HEIGHT);
-    point size(CARD_WIDTH, CARD_HEIGHT);
 
-    drawRectangle(origin, size, color);
-    drawSymbol(origin, size, color);
+
+    drawRectangle(origin, CARD_SIZE, color);
+    drawSymbol(origin, CARD_SIZE, color);
+}
+
+void GamePairsOpenGLDisplay::drawFailBox(unsigned int i)
+{
+    point origin(FAILBOX_ORIGIN_X, failBoxOriginY(i));
+    drawRectangle(origin, FAILBOX_SIZE, FAILBOX_COLOR);
+}
+
+float GamePairsOpenGLDisplay::failBoxOriginY(unsigned int i)
+{
+    static const float DISTANCE_FROM_BOTTOM = -1.0f + DISTANCE_BETWEEN_CARDS * FAILBOX_HEIGHT;
+
+    return DISTANCE_FROM_BOTTOM + i * (FAILBOX_HEIGHT + DISTANCE_BETWEEN_FAILBOXES);
 }
 
 void GamePairsOpenGLDisplay::pushColoredPoint(const point& p,
